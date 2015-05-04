@@ -2,18 +2,17 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory android:title="@string/prefs_title_category_one" >
-        <EditTextPreference
-            android:dialogTitle="@string/pw_dialog_title"
-            android:key="password"
-            android:summary="@string/pw_small"
-            android:title="@string/pw_title"
-            />
-
         <de.justus.schulinfo.UrlPreference
             android:dialogTitle="@string/url_dialog_title"
             android:key="url"
             android:summary="@string/url_small"
             android:title="@string/url_title" />
+
+        <EditTextPreference
+            android:dialogTitle="@string/pw_dialog_title"
+            android:key="password"
+            android:summary="@string/pw_small"
+            android:title="@string/pw_title" />
 
         <MultiSelectListPreference
             android:defaultValue="@array/empty_array"

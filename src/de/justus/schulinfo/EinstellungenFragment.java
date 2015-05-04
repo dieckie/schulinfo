@@ -20,22 +20,28 @@ public class EinstellungenFragment extends PreferenceFragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		JSONArray klassenArray = Downloader.getKlassen();
-		Log.d("JSON", "länge: " + klassenArray.length());
 		addPreferencesFromResource(R.xml.preferences);
-		int lenght = klassenArray.length();
-		String[] entries = new String[lenght];
-		for (int i = 0; i < lenght; i++) {
-			try {
-				entries[i] = klassenArray.getJSONObject(i).getString("name");
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}
-		//TODO Hier zwingend notwendig, die IDs der Klassen zu benutzen, oder gehen auch einfach die Namen?
 		MultiSelectListPreference multi = (MultiSelectListPreference) findPreference("class_select");
-		multi.setEntries(entries);
-		multi.setEntryValues(entries);
+		if (Downloader.downloaded) {
+			JSONArray klassenArray = Downloader.getKlassen();
+			Log.d("JSON", "länge: " + klassenArray.length());
+			int lenght = klassenArray.length();
+			String[] entries = new String[lenght];
+			for (int i = 0; i < lenght; i++) {
+				try {
+					entries[i] = klassenArray.getJSONObject(i).getString("name");
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+			}
+			// TODO Hier zwingend notwendig, die IDs der Klassen zu benutzen, oder gehen auch einfach die Namen?
+
+			multi.setEntries(entries);
+			multi.setEntryValues(entries);
+		} else {
+			multi.setEnabled(false);
+			multi.setSummary("Die Klassenliste konnte nicht herruntergeladen werden.");
+		}
 	}
 
 	@Override

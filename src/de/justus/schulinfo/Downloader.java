@@ -39,12 +39,13 @@ public class Downloader {
 				} else {
 					url = new URL("http://" + sUrl + "/components/com_school_mobile/wserv/service.php?task=getUpdates&pw=" + pw);
 				}
-			}
-			sObj = new DownloadFileFromURL().execute(url.toString()).get();
-			if (sObj != null) {
-				everything = new JSONObject(sObj);
-				downloaded = true;
-				return true;
+
+				sObj = new DownloadFileFromURL().execute(url.toString()).get();
+				if (sObj != null) {
+					everything = new JSONObject(sObj);
+					downloaded = true;
+					return true;
+				}
 			}
 		} catch (InterruptedException e) {
 			e.printStackTrace();

@@ -1,5 +1,6 @@
 package de.justus.schulinfo.vertretungen;
 
+import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -22,6 +23,8 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -133,6 +136,13 @@ public class VertretungenView extends View {
 		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight());
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
 		setFocusableInTouchMode(true);
+		if (!Downloader.downloaded) {
+			try {
+				MainActivity.getDownloader().download();
+			} catch (MalformedURLException e) {
+				Log.e("error", "doAfterConstruct", e);
+			}
+		}
 		readJSON();
 		arrow_back = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.arrow_back_32);
 		setupInfoscreenOrder();
@@ -181,7 +191,7 @@ public class VertretungenView extends View {
 			Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
 			Log.d("Prefs", "länge: " + gewaehlteKlassen.size());
 			boolean drewsth = false;
-			if (gewaehlteKlassen.size() >= 3) {
+			if (gewaehlteKlassen.size() >= 1) {
 				if (classArrays != null) {
 					int y = 100;
 					try {
@@ -204,12 +214,11 @@ public class VertretungenView extends View {
 				}
 			} else {
 				paint.setTextSize(25);
-				canvas.drawText("Du hast keine Klassen ausgewählt!", screen_w / 2 - paint.measureText("Du hast keine Klassen ausgewählt!") / 2, 160, paint);
-				canvas.drawText("Bitte wähle sie den Einstellungen aus.", screen_w / 2 - paint.measureText("Bitte wähle sie den Einstellungen aus.") / 2, 200, paint);
+				drawMultilineText("Du hast keine Klassen ausgewählt, bitte wähle welche in den Einstellungen aus!", 20, 160, screen_w - 40, 40, true, canvas, paint);
 			}
-			if (gewaehlteKlassen.size() >= 3 && drewsth == false) {
+			if (gewaehlteKlassen.size() >= 1 && drewsth == false) {
 				paint.setTextSize(25);
-				canvas.drawText("Keine Eintragungen für diesen Tag!", screen_w / 2 - paint.measureText("Keine Eintragungen für diesen Tag!") / 2, 150, paint);
+				drawMultilineText("Keine Eintragungen für diesen Tag!", 20, 160, screen_w - 40, 40, true, canvas, paint);
 			}
 			Log.d("selected", "selectedObj != null: " + (selectedObj != null));
 			if (selectedObj != null) {
@@ -259,7 +268,21 @@ public class VertretungenView extends View {
 				}
 			}
 		} else {
-			canvas.drawText("Laden...", getWidth() / 2 - paint.measureText("Laden...") / 2, getHeight() / 2, paint);
+			String url = prefs.getString("url", "");
+			if (url == "") {
+				drawMultilineText("Bitte stelle die URL in den Einstellungen ein.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
+			} else {
+				ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+				NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+
+				if (activeNetwork != null) {
+					if (activeNetwork.getType() != ConnectivityManager.TYPE_MOBILE || activeNetwork.getType() != ConnectivityManager.TYPE_WIFI) {
+						drawMultilineText("Das Handy hat keine Internetverbindung. Bitte stelle das WLAN oder die mobile Datennutzung an.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
+					}
+				} else {
+					drawMultilineText("Das Handy hat keine Internetverbindung. Bitte stelle das WLAN oder die mobile Datennutzung an.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
+				}
+			}
 		}
 	}
 
@@ -337,7 +360,28 @@ public class VertretungenView extends View {
 		canvas.drawText("Vertreter", 162 + ((screen_w - 293) - paint.measureText("Vertreter")) / 2, 94 + y, paint);
 		canvas.drawText("Raum", screen_w - (128 - (107 - paint.measureText("Raum")) / 2), 94 + y, paint);
 		return (size * 40) + y + 110;
+	}
 
+	public void drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint) {
+		float maxX = x + width;
+		float remaining = paint.measureText(text);
+		float x2 = x;
+		int pos = 0;
+		while (remaining > width) {
+			for (; x2 < maxX; pos++) {
+				canvas.drawText(String.valueOf(text.charAt(pos)), x2, y, paint);
+				x2 += paint.measureText(String.valueOf(text.charAt(pos)));
+			}
+			remaining -= x2;
+			x2 = x;
+			y += lineheight;
+		}
+		text = (String) text.substring(pos);
+		if (center) {
+			canvas.drawText(text, (float) (x + (width - paint.measureText(text)) * 0.5), y, paint);
+		} else {
+			canvas.drawText(text, x, y, paint);
+		}
 	}
 
 	/**
@@ -388,15 +432,18 @@ public class VertretungenView extends View {
 						height += 110 + classArrays[i].length() * 40;
 					}
 				}
+				if (height < screen_h) {
+					height = screen_h;
+				}
 				setMeasuredDimension(screen_w, height);
-				Log.d("measure", "w: " + screen_w + ", h: " + height);
+				Log.d("measure", "w: " + screen_w + ", h: " + height + "1");
 			} catch (JSONException e) {
 				Log.e("error", "onMeasure", e);
 			}
 		} else {
 			height = screen_h;
 			setMeasuredDimension(screen_w, screen_h);
-			Log.d("measure", "w: " + screen_w + ", h: " + screen_h);
+			Log.d("measure", "w: " + screen_w + ", h: " + screen_h + "2");
 		}
 
 		Log.d("Method", "onMeasure_Finished");
