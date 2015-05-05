@@ -27,7 +27,7 @@ public class Downloader {
 	public Downloader(Context context) {
 		this.context = context;
 	}
-
+ 
 	public boolean download() throws MalformedURLException {
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
