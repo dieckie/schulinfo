@@ -25,7 +25,7 @@ import android.view.View;
 			super(context, attrs, defStyle);
 			paint.setColor(Color.BLACK);
 		}
-
+ 
 		@Override
 		protected void onDraw(Canvas canvas) {
 			super.onDraw(canvas);
