@@ -25,6 +25,8 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.preference.Preference.OnPreferenceChangeListener;
+import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -183,104 +185,111 @@ public class VertretungenView extends View {
 				+ calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " " + calendar.get(Calendar.YEAR);
 		canvas.drawText(date, screen_w / 5 + (screen_w - ((screen_w / 5) * 2)) / 2 - paint.measureText(date) / 2, 60, paint);
 		paint.setColor(Color.rgb(190, 190, 190));
-		if (Downloader.downloaded) {
-			if (clicked_rect != null) {
-				canvas.drawRect(clicked_rect, paint);
-			}
-			paint.setColor(Color.BLACK);
-			Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-			Log.d("Prefs", "länge: " + gewaehlteKlassen.size());
-			boolean drewsth = false;
-			if (gewaehlteKlassen.size() >= 1) {
-				if (classArrays != null) {
-					int y = 100;
-					try {
-						for (int i = 0; i < classArrays.length; i++) {
-							String className = classArrays[i].getJSONObject(0).getString("klasse");
-							if (gewaehlteKlassen.contains(className)) {
-								y = drawClass(canvas, className, classArrays[i], y);
-								drewsth = true;
-							} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
-								y = drawClass(canvas, className, classArrays[i], y);
-								drewsth = true;
-							} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
-								y = drawClass(canvas, className, classArrays[i], y);
-								drewsth = true;
+		String error = Errorpanel.getError();
+		Log.d("errorpanel", error);
+		if (!error.equals("")) {
+			drawMultilineText(error, 20, 160, screen_w - 40, 40, true, canvas, paint);
+		} else {
+			if (Downloader.downloaded) {
+				if (clicked_rect != null) {
+					canvas.drawRect(clicked_rect, paint);
+				}
+				paint.setColor(Color.BLACK);
+				Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
+				Log.d("Prefs", "länge: " + gewaehlteKlassen.size());
+				boolean drewsth = false;
+				if (gewaehlteKlassen.size() >= 1) {
+					if (classArrays != null) {
+						int y = 100;
+						try {
+							for (int i = 0; i < classArrays.length; i++) {
+								String className = classArrays[i].getJSONObject(0).getString("klasse");
+								if (gewaehlteKlassen.contains(className)) {
+									y = drawClass(canvas, className, classArrays[i], y);
+									drewsth = true;
+								} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
+									y = drawClass(canvas, className, classArrays[i], y);
+									drewsth = true;
+								} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
+									y = drawClass(canvas, className, classArrays[i], y);
+									drewsth = true;
+								}
 							}
+						} catch (JSONException e) {
+							Log.e("error", "onDraw", e);
+						}
+					}
+				} else {
+					paint.setTextSize(25);
+					drawMultilineText("Du hast keine Klassen ausgewählt, bitte wähle welche in den Einstellungen aus!", 20, 160, screen_w - 40, 40, true, canvas, paint);
+				}
+				if (gewaehlteKlassen.size() >= 1 && drewsth == false) {
+					paint.setTextSize(25);
+					drawMultilineText("Keine Eintragungen für diesen Tag!", 20, 160, screen_w - 40, 40, true, canvas, paint);
+				}
+				Log.d("selected", "selectedObj != null: " + (selectedObj != null));
+				if (selectedObj != null) {
+					canvas.drawARGB(130, 0, 0, 0);
+					selectedPaint.setColor(Color.WHITE);
+					selectedPaint.setStyle(Paint.Style.FILL);
+					int display_center = (int) (0.5 * screen_h) + selectedTop;
+					canvas.drawRect(30, display_center - 350, screen_w - 30, display_center + 250, selectedPaint);
+					selectedPaint.setStyle(Paint.Style.STROKE);
+					selectedPaint.setStrokeWidth(3);
+					selectedPaint.setColor(Color.BLACK);
+					canvas.drawRect(30, display_center - 350, screen_w - 30, display_center + 250, selectedPaint);
+					canvas.drawLine(30, display_center + 180, screen_w - 30, display_center + 180, paint);
+					canvas.drawBitmap(arrow_back, (float) (screen_w * 0.5 - 32), display_center + 189, selectedPaint);
+					int y = display_center - 300;
+					selectedPaint.setTextSize(25);
+					selectedPaint.setTypeface(font);
+					selectedPaint.setStrokeWidth(1);
+					selectedPaint.setStyle(Paint.Style.FILL);
+					try {
+						if (selectedObj.getString("art") != null) {
+							String art = selectedObj.getString("art");
+							if (art.equals("C")) {
+								canvas.drawText("Ausfall", ((screen_w - 60) - selectedPaint.measureText("Ausfall")) / 2 + 20, y, paint);
+								y += 30;
+							} else if (art.equals("R")) {
+								canvas.drawText("Raumvertretung", ((screen_w - 60) - selectedPaint.measureText("Raumvertretung")) / 2 + 20, y, paint);
+								y += 30;
+							}
+						}
+						for (int i = 0; i < infoscreenOrder.length; i++) {
+							if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) != null) {
+								if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) instanceof String && !selectedObj.get(infoscreenValues.get(infoscreenOrder[i])).equals("")) {
+									canvas.drawText(String.valueOf(infoscreenOrder[i]), 60, y, selectedPaint);
+									canvas.drawText(String.valueOf(selectedObj.get(infoscreenValues.get(infoscreenOrder[i]))).replace('|', '-'),
+											screen_w - 60 - selectedPaint.measureText(String.valueOf(selectedObj.get(infoscreenValues.get(infoscreenOrder[i]))).replace('|', '-')), y, selectedPaint);
+									y += 30;
+								}
+							}
+						}
+						if (!selectedObj.getString("kommentar").equals("")) {
+							canvas.drawText("Kommentar", ((screen_w - 60) - selectedPaint.measureText("Kommentar")) / 2 + 30, y + 10, selectedPaint);
+							y += 40;
 						}
 					} catch (JSONException e) {
 						Log.e("error", "onDraw", e);
 					}
 				}
 			} else {
-				paint.setTextSize(25);
-				drawMultilineText("Du hast keine Klassen ausgewählt, bitte wähle welche in den Einstellungen aus!", 20, 160, screen_w - 40, 40, true, canvas, paint);
-			}
-			if (gewaehlteKlassen.size() >= 1 && drewsth == false) {
-				paint.setTextSize(25);
-				drawMultilineText("Keine Eintragungen für diesen Tag!", 20, 160, screen_w - 40, 40, true, canvas, paint);
-			}
-			Log.d("selected", "selectedObj != null: " + (selectedObj != null));
-			if (selectedObj != null) {
-				canvas.drawARGB(130, 0, 0, 0);
-				selectedPaint.setColor(Color.WHITE);
-				selectedPaint.setStyle(Paint.Style.FILL);
-				int display_center = (int) (0.5 * screen_h) + selectedTop;
-				canvas.drawRect(30, display_center - 350, screen_w - 30, display_center + 250, selectedPaint);
-				selectedPaint.setStyle(Paint.Style.STROKE);
-				selectedPaint.setStrokeWidth(3);
-				selectedPaint.setColor(Color.BLACK);
-				canvas.drawRect(30, display_center - 350, screen_w - 30, display_center + 250, selectedPaint);
-				canvas.drawLine(30, display_center + 180, screen_w - 30, display_center + 180, paint);
-				canvas.drawBitmap(arrow_back, (float) (screen_w * 0.5 - 32), display_center + 189, selectedPaint);
-				int y = display_center - 300;
-				selectedPaint.setTextSize(25);
-				selectedPaint.setTypeface(font);
-				selectedPaint.setStrokeWidth(1);
-				selectedPaint.setStyle(Paint.Style.FILL);
-				try {
-					if (selectedObj.getString("art") != null) {
-						String art = selectedObj.getString("art");
-						if (art.equals("C")) {
-							canvas.drawText("Ausfall", ((screen_w - 60) - selectedPaint.measureText("Ausfall")) / 2 + 20, y, paint);
-							y += 30;
-						} else if (art.equals("R")) {
-							canvas.drawText("Raumvertretung", ((screen_w - 60) - selectedPaint.measureText("Raumvertretung")) / 2 + 20, y, paint);
-							y += 30;
-						}
-					}
-					for (int i = 0; i < infoscreenOrder.length; i++) {
-						if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) != null) {
-							if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) instanceof String && !selectedObj.get(infoscreenValues.get(infoscreenOrder[i])).equals("")) {
-								canvas.drawText(String.valueOf(infoscreenOrder[i]), 60, y, selectedPaint);
-								canvas.drawText(String.valueOf(selectedObj.get(infoscreenValues.get(infoscreenOrder[i]))).replace('|', '-'),
-										screen_w - 60 - selectedPaint.measureText(String.valueOf(selectedObj.get(infoscreenValues.get(infoscreenOrder[i]))).replace('|', '-')), y, selectedPaint);
-								y += 30;
-							}
-						}
-					}
-					if (!selectedObj.getString("kommentar").equals("")) {
-						canvas.drawText("Kommentar", ((screen_w - 60) - selectedPaint.measureText("Kommentar")) / 2 + 30, y + 10, selectedPaint);
-						y += 40;
-					}
-				} catch (JSONException e) {
-					Log.e("error", "onDraw", e);
-				}
-			}
-		} else {
-			String url = prefs.getString("url", "");
-			if (url == "") {
-				drawMultilineText("Bitte stelle die URL in den Einstellungen ein.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
-			} else {
-				ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
-				NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+				String url = prefs.getString("url", "");
+				if (url == "") {
+					drawMultilineText("Bitte stelle die URL in den Einstellungen ein.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
+				} else {
+					ConnectivityManager cm = (ConnectivityManager) getContext().getSystemService(Context.CONNECTIVITY_SERVICE);
+					NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
 
-				if (activeNetwork != null) {
-					if (activeNetwork.getType() != ConnectivityManager.TYPE_MOBILE || activeNetwork.getType() != ConnectivityManager.TYPE_WIFI) {
+					if (activeNetwork != null) {
+						if (activeNetwork.getType() != ConnectivityManager.TYPE_MOBILE || activeNetwork.getType() != ConnectivityManager.TYPE_WIFI) {
+							drawMultilineText("Das Handy hat keine Internetverbindung. Bitte stelle das WLAN oder die mobile Datennutzung an.", 20, screen_h / 3, screen_w - 40, 40, true, canvas,
+									paint);
+						}
+					} else {
 						drawMultilineText("Das Handy hat keine Internetverbindung. Bitte stelle das WLAN oder die mobile Datennutzung an.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
 					}
-				} else {
-					drawMultilineText("Das Handy hat keine Internetverbindung. Bitte stelle das WLAN oder die mobile Datennutzung an.", 20, screen_h / 3, screen_w - 40, 40, true, canvas, paint);
 				}
 			}
 		}
@@ -363,24 +372,22 @@ public class VertretungenView extends View {
 	}
 
 	public void drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint) {
-		float maxX = x + width;
-		float remaining = paint.measureText(text);
-		float x2 = x;
-		int pos = 0;
-		while (remaining > width) {
-			for (; x2 < maxX; pos++) {
-				canvas.drawText(String.valueOf(text.charAt(pos)), x2, y, paint);
-				x2 += paint.measureText(String.valueOf(text.charAt(pos)));
+		String[] words = text.split(" ");
+		Log.d("Method", "DrawMultilineText");
+		int wordpos = 0;
+		String lineText = "";
+		while (wordpos < words.length) {
+			while (wordpos < words.length && paint.measureText(lineText + " " + words[wordpos]) < width) {
+				lineText += " " + words[wordpos];
+				wordpos++;
 			}
-			remaining -= x2;
-			x2 = x;
+			if (center) {
+				canvas.drawText(lineText, (float) (x + (width - paint.measureText(lineText)) * 0.5), y, paint);
+			} else {
+				canvas.drawText(lineText, x, y, paint);
+			}
+			lineText = "";
 			y += lineheight;
-		}
-		text = (String) text.substring(pos);
-		if (center) {
-			canvas.drawText(text, (float) (x + (width - paint.measureText(text)) * 0.5), y, paint);
-		} else {
-			canvas.drawText(text, x, y, paint);
 		}
 	}
 
@@ -632,6 +639,7 @@ public class VertretungenView extends View {
 				selectedObj = null;
 				invalidate();
 				return true;
+				
 			}
 		}
 		return super.onKeyDown(keyCode, event);

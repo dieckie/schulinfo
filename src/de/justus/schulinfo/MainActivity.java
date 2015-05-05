@@ -12,6 +12,7 @@ import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -43,7 +44,8 @@ public class MainActivity extends Activity {
 	private String[] mFragmentNames;
 	public static Context context;
 	boolean rightUrl = true;
-	static Downloader downloader;
+	public static Downloader downloader;
+	public static SharedPreferences prefs;
 	public static ActionBar actionbar;
 	String s = "";
 
@@ -87,6 +89,7 @@ public class MainActivity extends Activity {
 			selectItem(0);
 		}
 		context = getApplicationContext();
+		prefs = PreferenceManager.getDefaultSharedPreferences(context);
 		downloader = new Downloader(this);
 		try {
 			downloader.download();
@@ -195,7 +198,7 @@ public class MainActivity extends Activity {
 			@Override
 			public synchronized void run() {
 				try {
-					String sUrl = PreferenceManager.getDefaultSharedPreferences(context).getString("url", "");
+					String sUrl = prefs.getString("url", "");
 					Log.d("HTTP", sUrl + "");
 					URL url = new URL("http://demo.schooljoomla.de/components/com_school_mobile/wserv/service.php?" + params);
 					HttpURLConnection conn;

@@ -18,9 +18,10 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 public class Downloader {
-	static JSONObject everything = null;
+	static JSONObject updates = null;
 	static String sObj = "";
 	public static boolean downloaded = false;
+	public static boolean noJSONString = false;
 	Context context;
 
 	public Downloader(Context context) {
@@ -30,8 +31,8 @@ public class Downloader {
 	public boolean download() throws MalformedURLException {
 		try {
 			SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-			String sUrl = prefs.getString("url", "demo.schooljoomla.de");
-			String pw = prefs.getString("password", "schooljoomla");
+			String sUrl = prefs.getString("url", "");
+			String pw = prefs.getString("password", "");
 			URL url = null;
 			if (sUrl != "") {
 				if (pw == "") {
@@ -42,7 +43,7 @@ public class Downloader {
 
 				sObj = new DownloadFileFromURL().execute(url.toString()).get();
 				if (sObj != null) {
-					everything = new JSONObject(sObj);
+					updates = new JSONObject(sObj);
 					downloaded = true;
 					return true;
 				}
@@ -52,7 +53,7 @@ public class Downloader {
 		} catch (ExecutionException e) {
 			e.printStackTrace();
 		} catch (JSONException e) {
-			e.printStackTrace();
+			noJSONString = true;
 		}
 		return false;
 	}
@@ -61,7 +62,7 @@ public class Downloader {
 		JSONObject vertretungsplan = null;
 		if (downloaded) {
 			try {
-				vertretungsplan = everything.getJSONObject("vertretungsplan");
+				vertretungsplan = updates.getJSONObject("vertretungsplan");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -69,11 +70,24 @@ public class Downloader {
 		return vertretungsplan;
 	}
 
+	public static JSONObject getUpdates() {
+		if (downloaded) {
+			return updates;
+		} else {
+			return new JSONObject();
+		}
+
+	}
+
+	public static String getJSONString() {
+		return sObj;
+	}
+
 	public static JSONArray getKlassen() {
 		JSONArray klassen = null;
 		if (downloaded) {
 			try {
-				klassen = everything.getJSONArray("klassenjgst");
+				klassen = updates.getJSONArray("klassenjgst");
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
