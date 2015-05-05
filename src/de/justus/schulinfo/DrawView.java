@@ -49,7 +49,6 @@ import android.view.View;
 			canvas.drawLine(w - 20, 70, w - 20, 138, paint);
 			// Horizontale Linien
 			canvas.drawLine(20, 100, w - 20, 100, paint);
-			// canvas.drawLine(20, 138, w - 20, 138, paint);
 			// Kategorien
 			canvas.drawText("Std", 21 + (50 - paint.measureText("Std")) / 2, 96, paint);
 			canvas.drawText("Fach", 75 + (84 - paint.measureText("Fach")) / 2, 96, paint);
