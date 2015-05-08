@@ -14,7 +14,6 @@ public class Errorpanel {
 
 	public static String getError() {
 		String error = "";
-		boolean needRefresh = false;
 		JSONObject getUpdates;
 		if (MainActivity.prefs.getString("url", "").equals("")) {
 			error = "Du hast die URL nicht angegeben, bitte trage sie in den Einstellungen ein.";
@@ -34,12 +33,32 @@ public class Errorpanel {
 				try {
 					if (getUpdates.getInt("error") != 0) {
 						switch (getUpdates.getInt("error")) {
+						case 2:
 						case 17:
 							if (MainActivity.prefs.getString("password", "").equals("")) {
 								error = "Du musst das Passwort in den Einstellungen eingeben, damit du die Daten ansehen kannst.";
 							} else {
 								error = "Du hast das falsche Passwort eingeben, bitte ändere es in den Einstellungen";
 							}
+							break;
+						case 14:
+						case 15:
+							error = "Du darfst nicht vom Handy aus auf den Vertretungsplan zugreifen.";
+							break;
+						case 2001:
+							error = "Die Vertretungsplankomponente ist nicht auf dem Server installiert.";
+							break;
+						case 3001:
+							error = "Die Klassenarbeitskomponente ist nicht auf dem Server installiert.";
+							break;
+						case 3002:
+							error = "Schüler dürfen nicht auf Klassenarbeiten zugreifen.";
+							break;
+						case 4001:
+							error = "Die Klausurkomponente ist nicht auf dem Server installiert.";
+							break;
+						case 4002:
+							error = "Schüler dürfen nicht auf Klausuren zugreifen.";
 							break;
 						}
 					}

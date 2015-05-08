@@ -23,10 +23,6 @@ import android.graphics.Paint;
 import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
-import android.preference.Preference.OnPreferenceChangeListener;
-import android.preference.Preference;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -459,7 +455,6 @@ public class VertretungenView extends View {
 			setMeasuredDimension(screen_w, screen_h);
 			Log.d("measure", "w: " + screen_w + ", h: " + screen_h + "2");
 		}
-
 		Log.d("Method", "onMeasure_Finished");
 	}
 

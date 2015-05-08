@@ -29,6 +29,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.ScrollView;
+import android.widget.ViewFlipper;
 import de.justus.gymboapp.R;
 
 @SuppressWarnings("deprecation")
@@ -227,7 +228,8 @@ public class MainActivity extends Activity {
 
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-			ScrollView rootView = (ScrollView) inflater.inflate(R.layout.fragment_vertretung, container, false);
+			//TODO Wieder zurück ändern?
+			ViewFlipper rootView = (ViewFlipper) inflater.inflate(R.layout.fragment_vertretung_flipper, container, false);
 			getActivity().setTitle("Vertretungen");
 			return rootView;
 		}
