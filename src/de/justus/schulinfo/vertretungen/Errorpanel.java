@@ -1,5 +1,8 @@
 package de.justus.schulinfo.vertretungen;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -26,8 +29,6 @@ public class Errorpanel {
 				error = "Laden";
 			} else if (Downloader.noJSONString) {
 				error = "Du hast wahrscheinlich die URL falsch eingegeben.";
-			} else if (!Downloader.getUpdates().has("errors")) {
-				error = "Entweder hast du die falsche URL angegeben, oder der Server funktioniert nicht richtig.";
 			} else {
 				getUpdates = Downloader.getUpdates();
 				try {
@@ -60,6 +61,11 @@ public class Errorpanel {
 						case 4002:
 							error = "Schüler dürfen nicht auf Klausuren zugreifen.";
 							break;
+						}
+					} else {
+						Set<String> set = MainActivity.prefs.getStringSet("class_select", new HashSet<String>());
+						if (set.isEmpty()) {
+							error = "Du hast Klassen ausgewählt, bitte wähle welche in den Einstellungen aus.";
 						}
 					}
 				} catch (JSONException e) {

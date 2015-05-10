@@ -6,7 +6,7 @@ import android.preference.DialogPreference;
 import android.util.AttributeSet;
 import android.view.View;
 import android.widget.EditText;
-import de.justus.gymboapp.R;
+import de.justus.schulinfo.R;
 
 public class UrlPreference extends DialogPreference {
 

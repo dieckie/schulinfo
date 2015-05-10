@@ -3,10 +3,8 @@ package de.justus.schulinfo.vertretungen;
 import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Locale;
-import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -18,9 +16,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
-import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.preference.PreferenceManager;
@@ -31,11 +27,11 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 import android.widget.ViewFlipper;
-import de.justus.schulinfo.R;
 import de.justus.schulinfo.Downloader;
 import de.justus.schulinfo.MainActivity;
+import de.justus.schulinfo.R;
 
-public class VertretungenView extends View {
+public class VertretungsInfo extends View {
 	Paint paint = new Paint();
 	/**
 	 * Alle Vertretungen von einem Tag. Wird bei jedem Aufruf von {@link #readJSON()} neu definiert.
@@ -97,25 +93,25 @@ public class VertretungenView extends View {
 	HashMap<String, String> infoscreenValues = new HashMap<String, String>();
 
 	String[] infoscreenOrder = { "Datum", "Klasse", "Stunde", "Raum", "Lehrer", "Fach" };
-	
-	private HashSet<String> empty = new HashSet<String>();
+
+	private Paint selectedPaint = new Paint();
 
 	Bitmap arrow_back;
 
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Typeface topic = Typeface.create("Consolas", Typeface.BOLD);
 
-	public VertretungenView(Context context) {
+	public VertretungsInfo(Context context) {
 		super(context);
 		doAfterConstruct();
 	}
 
-	public VertretungenView(Context context, AttributeSet attrs) {
+	public VertretungsInfo(Context context, AttributeSet attrs) {
 		super(context, attrs);
 		doAfterConstruct();
 	}
 
-	public VertretungenView(Context context, AttributeSet attrs, int defStyle) {
+	public VertretungsInfo(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 		doAfterConstruct();
 	}
@@ -165,137 +161,62 @@ public class VertretungenView extends View {
 	public void onDraw(Canvas canvas) {
 		Log.d("Method", "onDraw");
 		screen_w = canvas.getWidth();
-		paint.setStrokeWidth(1);
-		canvas.drawLine(0, 90, screen_w, 90, paint);
-		canvas.drawLine(screen_w / 5, 0, screen_w / 5, 90, paint);
-		canvas.drawLine(screen_w - (screen_w / 5), 0, screen_w - (screen_w / 5), 90, paint);
+		paint.setStrokeWidth(2);
+		selectedObj = SelectedObject.get();
 		paint.setTypeface(font);
 		paint.setTextSize(30);
-		canvas.drawText("<<", screen_w / 10 - 15, 60, paint);
-		canvas.drawText(">>", screen_w - (screen_w / 10 + 15), 60, paint);
 		if (scrollview == null) {
 			scrollview = (ScrollView) getParent();
 		}
 		if (viewflipper == null) {
 			viewflipper = (ViewFlipper) scrollview.getParent();
 		}
-		String date = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.GERMANY) + ", " + calendar.get(Calendar.DATE) + ". "
-				+ calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " " + calendar.get(Calendar.YEAR);
-		canvas.drawText(date, screen_w / 5 + (screen_w - ((screen_w / 5) * 2)) / 2 - paint.measureText(date) / 2, 60, paint);
-		paint.setColor(Color.rgb(190, 190, 190));
-		String error = Errorpanel.getError();
-		Log.d("errorpanel", error);
-		if (!error.equals("")) {
-			drawMultilineText(error, 20, 160, screen_w - 40, 40, true, canvas, paint);
-		} else {
-			if (clicked_rect != null) {
-				canvas.drawRect(clicked_rect, paint);
-			}
-			paint.setColor(Color.BLACK);
-			Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-			Log.d("Prefs", "länge: " + gewaehlteKlassen.size());
-			boolean drewsth = false;
-			if (classArrays != null) {
-				int y = 100;
-				try {
-					for (int i = 0; i < classArrays.length; i++) {
-						String className = classArrays[i].getJSONObject(0).getString("klasse");
-						if (gewaehlteKlassen.contains(className)) {
-							y = drawClass(canvas, className, classArrays[i], y);
-							drewsth = true;
-						} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
-							y = drawClass(canvas, className, classArrays[i], y);
-							drewsth = true;
-						} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
-							y = drawClass(canvas, className, classArrays[i], y);
-							drewsth = true;
+		Log.d("selected", "selectedObj != null: " + (selectedObj != null));
+		if (SelectedObject.exists()) {
+			int y = 50;
+			selectedPaint.setTextSize(25);
+			selectedPaint.setTypeface(font);
+			selectedPaint.setStrokeWidth(1);
+			selectedPaint.setStyle(Paint.Style.FILL);
+			try {
+				String artText = "";
+				if (selectedObj.getString("art") != null) {
+					String art = selectedObj.getString("art");
+					if (art.equals("C")) {
+						artText = "Entfall";
+					} else if (art.equals("R")) {
+						artText = "Raumvertretung";
+					} else if (art.equals("E")) {
+						artText = "Klausur";
+					} else {
+						artText = "Vertretung";
+					}
+				} else {
+					artText = "Vertretung";
+				}
+				drawMultilineText(artText, 0, y, screen_w, 50, true, canvas, paint);
+				y += 50;
+				for (int i = 0; i < infoscreenOrder.length; i++) {
+					if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) != null) {
+						if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) instanceof String && !selectedObj.get(infoscreenValues.get(infoscreenOrder[i])).equals("")) {
+							canvas.drawText(String.valueOf(infoscreenOrder[i]), 60, y, selectedPaint);
+							canvas.drawText(String.valueOf(selectedObj.get(infoscreenValues.get(infoscreenOrder[i]))).replace('|', '-'),
+									screen_w - 60 - selectedPaint.measureText(String.valueOf(selectedObj.get(infoscreenValues.get(infoscreenOrder[i]))).replace('|', '-')), y, selectedPaint);
+							y += 30;
 						}
 					}
-				} catch (JSONException e) {
-					Log.e("error", "onDraw", e);
 				}
-			}
-			if (gewaehlteKlassen.size() >= 1 && drewsth == false) {
-				paint.setTextSize(25);
-				drawMultilineText("Keine Eintragungen für diesen Tag!", 20, 160, screen_w - 40, 40, true, canvas, paint);
-			}
-		}
-	}
-
-	/**
-	 * Malt eine Klasse auf dem Canvas.
-	 * 
-	 * @param canvas
-	 *            Das {@link Canvas}, auf das gemalt werden soll.
-	 * @param className
-	 *            Der Klassenname, der oben über den Vertretungen steht.
-	 * @param array
-	 *            Das Array der Vertretungen der zu malenden Klasse.
-	 * @param y
-	 *            Die Höhe auf dem Canvas, ab der begonnen werden soll.
-	 * @return Die Höhe auf dem Canvas, bei der weitergezeichnet werden kann.
-	 */
-	public int drawClass(Canvas canvas, String className, JSONArray array, int y) {
-		paint.setStrokeWidth(2);
-		paint.setColor(Color.rgb(170, 170, 170));
-		paint.setTypeface(topic);
-		paint.setTextSize(45);
-		canvas.drawText(className, 10, 40 + y, paint);
-		canvas.drawRect(12, 50 + y, screen_w - 50, 55 + y, paint);
-		int size = array.length();
-		paint.setTypeface(font);
-		paint.setColor(Color.BLACK);
-		paint.setTextSize(30);
-		// Vertikale Linien
-		canvas.drawLine(20, 70 + y, 20, 100 + y + (40 * size), paint);
-		canvas.drawLine(73, 70 + y, 73, 100 + y + (40 * size), paint);
-		canvas.drawLine(160, 70 + y, 160, 100 + y + (40 * size), paint);
-		canvas.drawLine(screen_w - 130, 70 + y, screen_w - 130, 100 + y + (40 * size), paint);
-		canvas.drawLine(screen_w - 20, 70 + y, screen_w - 20, 100 + y + (40 * size), paint);
-		// Horizontale Linen
-		canvas.drawLine(20, y + 100, screen_w - 20, y + 100, paint);
-		for (int i = 0; i < size; i++) {
-			paint.setColor(Color.BLACK);
-			paint.setAlpha(255);
-			canvas.drawLine(20, y + 140 + (i * 40), screen_w - 20, y + 140 + (i * 40), paint);
-			// Inhalt
-			JSONObject vertretungObj = array.optJSONObject(i);
-			drawTextNotNull("stunden", vertretungObj, canvas, 21, 50, y + 130 + (i * 40));
-			drawTextNotNull("fach", vertretungObj, canvas, 75, 84, y + 130 + (i * 40));
-			drawTextNotNull("verlehrerkuerzel", vertretungObj, canvas, 162, screen_w - 293, y + 130 + (i * 40));
-			drawTextNotNull("raum", vertretungObj, canvas, screen_w - 128, 107, y + 130 + (i * 40));
-			try {
-				String art = vertretungObj.getString("art");
-				if (!art.equals("")) {
-					paint.setAlpha(150);
-					Path path = new Path();
-					path.moveTo(screen_w - 21, y + 119 + (i * 40));
-					path.lineTo(screen_w - 21, y + 139 + (i * 40));
-					path.lineTo(screen_w - 41, y + 139 + (i * 40));
-					path.lineTo(screen_w - 21, y + 119 + (i * 40));
-					path.close();
-					if (art.equals("C")) {
-						paint.setColor(Color.RED);
-						canvas.drawPath(path, paint);
-					} else if (art.equals("R")) {
-						paint.setColor(Color.BLUE);
-						canvas.drawPath(path, paint);
-					} else {
-						Log.w("onDraw", "There is another ART: " + art);
-					}
+				if (!selectedObj.getString("kommentar").equals("")) {
+					canvas.drawText("Kommentar", ((screen_w - 60) - selectedPaint.measureText("Kommentar")) / 2 + 30, y + 10, selectedPaint);
+					y += 40;
 				}
+				selectedPaint.setStrokeWidth(2);
+				canvas.drawLine(0, height - 80, screen_w, height - 80, paint);
+				canvas.drawBitmap(arrow_back, (float) (screen_w * 0.5 - 32), height - 64, selectedPaint);
 			} catch (JSONException e) {
-				Log.e("error", "drawClass", e);
+				Log.e("error", "onDraw", e);
 			}
 		}
-		// Kategorien
-		paint.setAlpha(255);
-		paint.setColor(Color.BLACK);
-		canvas.drawText("Std", 21 + (50 - paint.measureText("Std")) / 2, 94 + y, paint);
-		canvas.drawText("Fach", 75 + (84 - paint.measureText("Fach")) / 2, 94 + y, paint);
-		canvas.drawText("Vertreter", 162 + ((screen_w - 293) - paint.measureText("Vertreter")) / 2, 94 + y, paint);
-		canvas.drawText("Raum", screen_w - (128 - (107 - paint.measureText("Raum")) / 2), 94 + y, paint);
-		return (size * 40) + y + 110;
 	}
 
 	public void drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint) {
@@ -359,34 +280,9 @@ public class VertretungenView extends View {
 		}
 		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight());
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
-		if (dateObj != null) {
-			try {
-				Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-				height = 110;
-				for (int i = 0; i < classArrays.length; i++) {
-					String className = classArrays[i].getJSONObject(0).getString("klasse");
-					if (gewaehlteKlassen.contains(className)) {
-						height += 110 + classArrays[i].length() * 40;
-					} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
-						height += 110 + classArrays[i].length() * 40;
-					} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
-						height += 110 + classArrays[i].length() * 40;
-					}
-				}
-				if (height < screen_h) {
-					height = screen_h;
-				}
-				setMeasuredDimension(screen_w, height);
-				Log.d("measure", "w: " + screen_w + ", h: " + height + "1");
-			} catch (JSONException e) {
-				Log.e("error", "onMeasure", e);
-			}
-		} else {
-			height = screen_h;
-			setMeasuredDimension(screen_w, screen_h);
-			Log.d("measure", "w: " + screen_w + ", h: " + screen_h + "2");
-		}
-		Log.d("Method", "onMeasure_Finished");
+		height = screen_h;
+		setMeasuredDimension(screen_w, screen_h);
+		Log.d("measure", "w: " + screen_w + ", h: " + screen_h + "2");
 	}
 
 	/**
@@ -439,73 +335,10 @@ public class VertretungenView extends View {
 	 */
 	public void onClick(int x, int y) {
 		Log.d("Click", "x: " + x + ", y: " + y);
-		if (SelectedObject.exists()) {
-			Log.d("Click", "y >: " + (selectedTop + 180));
-			if (y > (0.5 * screen_h) + 180 + selectedTop && y < (0.5 * screen_h) + 250 + selectedTop) {
-				Log.d("Click", "Yes1");
-				if (x > 30 && x < screen_w - 30) {
-					Log.d("Click", "Yes2");
-					SelectedObject.set(null);
-					invalidate();
-				}
-			}
-		} else {
-			if (y < 90) {
-				if (x < screen_w / 5) {
-					calendar.add(Calendar.DATE, -1);
-					hasDate = false;
-					readJSON();
-				} else if (x > screen_w - screen_w / 5) {
-					calendar.add(Calendar.DATE, 1);
-					hasDate = false;
-					readJSON();
-				} else {
-					calendar = Calendar.getInstance(Locale.GERMANY);
-					hasDate = false;
-					readJSON();
-				}
-			} else {
-				if (dateObj != null) {
-					int y2 = 100;
-					out: for (int i = 0; i < classArrays.length; i++) {
-						try {
-							boolean containsClass = false;
-							String className = classArrays[i].getJSONObject(0).getString("klasse");
-							Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-							if (gewaehlteKlassen.contains(className)) {
-								containsClass = true;
-							} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
-								containsClass = true;
-							} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
-								containsClass = true;
-							}
-							if (containsClass) {
-								int y3 = y2 + classArrays[i].length() * 40 + 110;
-								if (y < y3) {
-									int y4 = y2 + 100;
-									if (y >= y4) {
-										for (int i2 = 0; i2 < classArrays[i].length(); i2++) {
-											if (y < y4 + 40) {
-												SelectedObject.set(classArrays[i].getJSONObject(i2));
-												viewflipper.showNext();
-												postInvalidate();
-												break out;
-											} else {
-												y4 += 40;
-											}
-										}
-									}
-									break out;
-								} else {
-									y2 = y3;
-								}
-							}
-						} catch (JSONException e2) {
-							e2.printStackTrace();
-						}
-					}
-				}
-			}
+		if (y > height - 80) {
+			SelectedObject.set(null);
+			viewflipper.showPrevious();
+			invalidate();
 		}
 	}
 
@@ -552,5 +385,20 @@ public class VertretungenView extends View {
 		}
 		requestLayout();
 		invalidate();
+	}
+
+	/**
+	 * Ein Listener, der überprüft, ob die BACK-Taste gedrückt wird, um das Infofenster der ausgewählten Vertretung zu schließen.
+	 */
+	@Override
+	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		Log.d("Touch", "Button");
+		if (keyCode == KeyEvent.KEYCODE_BACK) {
+			Log.d("Touch", "Button_BACK");
+				selectedObj = null;
+				invalidate();
+				return true;
+		}
+		return super.onKeyDown(keyCode, event);
 	}
 }
