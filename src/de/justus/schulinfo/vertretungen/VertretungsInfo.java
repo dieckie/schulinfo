@@ -136,7 +136,6 @@ public class VertretungsInfo extends View {
 				Log.e("error", "doAfterConstruct", e);
 			}
 		}
-		readJSON();
 		arrow_back = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.arrow_back_32);
 		setupInfoscreenOrder();
 	}
@@ -342,50 +341,6 @@ public class VertretungsInfo extends View {
 		}
 	}
 
-	/**
-	 * Zu erst holt die Methode sich neu alle Vertretungen von {@link Downloader}. Dann definiert es {@link #dateObj},{@link #hasDate} und {@link #classArrays} und sortiert es. Als letztes ruft es
-	 * {@link #requestLayout()} und {@link #invalidate()} auf.
-	 */
-	public void readJSON() {
-		Log.d("Method", "readJSON");
-		try {
-			if (Downloader.downloaded) {
-				JSONObject schuelervertretungen = Downloader.getVertretungsplan().getJSONObject("schuelervertretungen");
-				String sDate = calendar.get(Calendar.YEAR) + "-" + zweistellig(calendar.get(Calendar.MONTH) + 1) + "-" + zweistellig(calendar.get(Calendar.DAY_OF_MONTH));
-				if (schuelervertretungen.has(sDate)) {
-					dateObj = schuelervertretungen.getJSONObject(sDate);
-					hasDate = true;
-					classArrays = new JSONArray[dateObj.length() - 1];
-					int h = 0;
-					for (@SuppressWarnings("unchecked")
-					Iterator<String> i = dateObj.keys(); i.hasNext();) {
-						String classname = i.next();
-						if (!classname.equals("elementscount")) {
-							classArrays[h] = dateObj.getJSONArray(classname);
-							h++;
-						}
-					}
-					for (int i = 0; i < classArrays.length; i++) {
-						for (int j = 0; j < (classArrays.length - 1) - i; j++) {
-							JSONArray temp;
-							if (classArrays[j].getJSONObject(0).getString("klasse").compareTo(classArrays[j + 1].getJSONObject(0).getString("klasse")) > 0) {
-								temp = classArrays[j];
-								classArrays[j] = classArrays[j + 1];
-								classArrays[j + 1] = temp;
-							}
-						}
-					}
-				} else {
-					dateObj = null;
-					classArrays = null;
-				}
-			}
-		} catch (JSONException e) {
-			Log.e("JSON", "error", e);
-		}
-		requestLayout();
-		invalidate();
-	}
 
 	/**
 	 * Ein Listener, der überprüft, ob die BACK-Taste gedrückt wird, um das Infofenster der ausgewählten Vertretung zu schließen.
@@ -395,9 +350,10 @@ public class VertretungsInfo extends View {
 		Log.d("Touch", "Button");
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			Log.d("Touch", "Button_BACK");
-				selectedObj = null;
-				invalidate();
-				return true;
+			SelectedObject.set(null);
+			viewflipper.showPrevious();
+			invalidate();
+			return true;
 		}
 		return super.onKeyDown(keyCode, event);
 	}

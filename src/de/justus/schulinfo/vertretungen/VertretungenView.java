@@ -77,8 +77,7 @@ public class VertretungenView extends View {
 	 */
 
 	int selectedTop = -1;
-
-	JSONObject selectedObj = null;
+	
 	/**
 	 * Das ausgewählte Datum.<br>
 	 * <p>
@@ -97,7 +96,7 @@ public class VertretungenView extends View {
 	HashMap<String, String> infoscreenValues = new HashMap<String, String>();
 
 	String[] infoscreenOrder = { "Datum", "Klasse", "Stunde", "Raum", "Lehrer", "Fach" };
-	
+
 	private HashSet<String> empty = new HashSet<String>();
 
 	Bitmap arrow_back;
@@ -439,70 +438,58 @@ public class VertretungenView extends View {
 	 */
 	public void onClick(int x, int y) {
 		Log.d("Click", "x: " + x + ", y: " + y);
-		if (SelectedObject.exists()) {
-			Log.d("Click", "y >: " + (selectedTop + 180));
-			if (y > (0.5 * screen_h) + 180 + selectedTop && y < (0.5 * screen_h) + 250 + selectedTop) {
-				Log.d("Click", "Yes1");
-				if (x > 30 && x < screen_w - 30) {
-					Log.d("Click", "Yes2");
-					SelectedObject.set(null);
-					invalidate();
-				}
+		if (y < 90) {
+			if (x < screen_w / 5) {
+				calendar.add(Calendar.DATE, -1);
+				hasDate = false;
+				readJSON();
+			} else if (x > screen_w - screen_w / 5) {
+				calendar.add(Calendar.DATE, 1);
+				hasDate = false;
+				readJSON();
+			} else {
+				calendar = Calendar.getInstance(Locale.GERMANY);
+				hasDate = false;
+				readJSON();
 			}
 		} else {
-			if (y < 90) {
-				if (x < screen_w / 5) {
-					calendar.add(Calendar.DATE, -1);
-					hasDate = false;
-					readJSON();
-				} else if (x > screen_w - screen_w / 5) {
-					calendar.add(Calendar.DATE, 1);
-					hasDate = false;
-					readJSON();
-				} else {
-					calendar = Calendar.getInstance(Locale.GERMANY);
-					hasDate = false;
-					readJSON();
-				}
-			} else {
-				if (dateObj != null) {
-					int y2 = 100;
-					out: for (int i = 0; i < classArrays.length; i++) {
-						try {
-							boolean containsClass = false;
-							String className = classArrays[i].getJSONObject(0).getString("klasse");
-							Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-							if (gewaehlteKlassen.contains(className)) {
-								containsClass = true;
-							} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
-								containsClass = true;
-							} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
-								containsClass = true;
-							}
-							if (containsClass) {
-								int y3 = y2 + classArrays[i].length() * 40 + 110;
-								if (y < y3) {
-									int y4 = y2 + 100;
-									if (y >= y4) {
-										for (int i2 = 0; i2 < classArrays[i].length(); i2++) {
-											if (y < y4 + 40) {
-												SelectedObject.set(classArrays[i].getJSONObject(i2));
-												viewflipper.showNext();
-												postInvalidate();
-												break out;
-											} else {
-												y4 += 40;
-											}
+			if (dateObj != null) {
+				int y2 = 100;
+				out: for (int i = 0; i < classArrays.length; i++) {
+					try {
+						boolean containsClass = false;
+						String className = classArrays[i].getJSONObject(0).getString("klasse");
+						Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
+						if (gewaehlteKlassen.contains(className)) {
+							containsClass = true;
+						} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
+							containsClass = true;
+						} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
+							containsClass = true;
+						}
+						if (containsClass) {
+							int y3 = y2 + classArrays[i].length() * 40 + 110;
+							if (y < y3) {
+								int y4 = y2 + 100;
+								if (y >= y4) {
+									for (int i2 = 0; i2 < classArrays[i].length(); i2++) {
+										if (y < y4 + 40) {
+											SelectedObject.set(classArrays[i].getJSONObject(i2));
+											viewflipper.showNext();
+											postInvalidate();
+											break out;
+										} else {
+											y4 += 40;
 										}
 									}
-									break out;
-								} else {
-									y2 = y3;
 								}
+								break out;
+							} else {
+								y2 = y3;
 							}
-						} catch (JSONException e2) {
-							e2.printStackTrace();
 						}
+					} catch (JSONException e2) {
+						e2.printStackTrace();
 					}
 				}
 			}
