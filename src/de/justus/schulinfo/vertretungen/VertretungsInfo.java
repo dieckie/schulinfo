@@ -3,7 +3,6 @@ package de.justus.schulinfo.vertretungen;
 import java.net.MalformedURLException;
 import java.util.Calendar;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Locale;
 
 import org.json.JSONArray;
@@ -207,7 +206,13 @@ public class VertretungsInfo extends View {
 				}
 				if (!selectedObj.getString("kommentar").equals("")) {
 					canvas.drawText("Kommentar", ((screen_w - 60) - selectedPaint.measureText("Kommentar")) / 2 + 30, y + 10, selectedPaint);
-					y += 40;
+					y += 45;
+					y = drawMultilineText(selectedObj.getString("kommentar"), 30, y, screen_w - 60, 40, true, canvas, selectedPaint);
+				}
+				if (selectedObj.has("materialfiles")) {
+					if (selectedObj.has("materialkommentar")) {
+
+					}
 				}
 				selectedPaint.setStrokeWidth(2);
 				canvas.drawLine(0, height - 80, screen_w, height - 80, paint);
@@ -218,7 +223,7 @@ public class VertretungsInfo extends View {
 		}
 	}
 
-	public void drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint) {
+	public int drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint) {
 		String[] words = text.split(" ");
 		Log.d("Method", "DrawMultilineText");
 		int wordpos = 0;
@@ -236,6 +241,7 @@ public class VertretungsInfo extends View {
 			lineText = "";
 			y += lineheight;
 		}
+		return (int) y;
 	}
 
 	/**
@@ -340,7 +346,6 @@ public class VertretungsInfo extends View {
 			invalidate();
 		}
 	}
-
 
 	/**
 	 * Ein Listener, der überprüft, ob die BACK-Taste gedrückt wird, um das Infofenster der ausgewählten Vertretung zu schließen.

@@ -26,14 +26,15 @@ import android.graphics.Typeface;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
 import android.widget.ScrollView;
 import android.widget.ViewFlipper;
-import de.justus.schulinfo.R;
 import de.justus.schulinfo.Downloader;
 import de.justus.schulinfo.MainActivity;
+import de.justus.schulinfo.R;
 
 public class VertretungenView extends View {
 	Paint paint = new Paint();
@@ -77,7 +78,7 @@ public class VertretungenView extends View {
 	 */
 
 	int selectedTop = -1;
-	
+
 	/**
 	 * Das ausgewählte Datum.<br>
 	 * <p>
@@ -140,6 +141,12 @@ public class VertretungenView extends View {
 			}
 		}
 		readJSON();
+		final GestureDetector gd = new GestureDetector(this.getContext(), new GestureListener());
+		setOnTouchListener(new View.OnTouchListener() {
+			public boolean onTouch(View v, MotionEvent event) {
+				return gd.onTouchEvent(event);
+			}
+		});
 		arrow_back = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.arrow_back_32);
 		setupInfoscreenOrder();
 	}
@@ -257,12 +264,7 @@ public class VertretungenView extends View {
 			paint.setColor(Color.BLACK);
 			paint.setAlpha(255);
 			canvas.drawLine(20, y + 140 + (i * 40), screen_w - 20, y + 140 + (i * 40), paint);
-			// Inhalt
 			JSONObject vertretungObj = array.optJSONObject(i);
-			drawTextNotNull("stunden", vertretungObj, canvas, 21, 50, y + 130 + (i * 40));
-			drawTextNotNull("fach", vertretungObj, canvas, 75, 84, y + 130 + (i * 40));
-			drawTextNotNull("verlehrerkuerzel", vertretungObj, canvas, 162, screen_w - 293, y + 130 + (i * 40));
-			drawTextNotNull("raum", vertretungObj, canvas, screen_w - 128, 107, y + 130 + (i * 40));
 			try {
 				String art = vertretungObj.getString("art");
 				if (!art.equals("")) {
@@ -283,9 +285,29 @@ public class VertretungenView extends View {
 						Log.w("onDraw", "There is another ART: " + art);
 					}
 				}
+				String kommentar = vertretungObj.getString("kommentar");
+				int color = -1;
+				if (!kommentar.equals("")) {
+					if (kommentar.startsWith("#!#")) {
+						color = Color.rgb(255, 127, 0);
+					} else if (kommentar.startsWith("#!!#")) {
+						color = Color.rgb(255, 0, 0);
+					}
+				}
+				if (color != -1) {
+					paint.setColor(color);
+					paint.setAlpha(150);
+					canvas.drawRect(20, y + 100 + (i * 40), screen_w - 20, y + 140 + (i * 40), paint);
+				}
 			} catch (JSONException e) {
 				Log.e("error", "drawClass", e);
 			}
+			// Inhalt
+			paint.setColor(Color.BLACK);
+			drawTextNotNull("stunden", vertretungObj, canvas, 21, 50, y + 130 + (i * 40));
+			drawTextNotNull("fach", vertretungObj, canvas, 75, 84, y + 130 + (i * 40));
+			drawTextNotNull("verlehrerkuerzel", vertretungObj, canvas, 162, screen_w - 293, y + 130 + (i * 40));
+			drawTextNotNull("raum", vertretungObj, canvas, screen_w - 128, 107, y + 130 + (i * 40));
 		}
 		// Kategorien
 		paint.setAlpha(255);
@@ -539,5 +561,38 @@ public class VertretungenView extends View {
 		}
 		requestLayout();
 		invalidate();
+	}
+
+	private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+			Log.d("fling", "A");
+			try {
+				int SWIPE_THRESHOLD = 100;
+				int SWIPE_VELOCITY_THRESHOLD = 100;
+				float diffY = e2.getY() - e1.getY();
+				float diffX = e2.getX() - e1.getX();
+				if (Math.abs(diffY) < 100) {
+					if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
+						if (diffX > 0) {
+							calendar.add(Calendar.DATE, -1);
+							hasDate = false;
+							readJSON();
+							return true;
+						} else {
+							calendar.add(Calendar.DATE, 1);
+							hasDate = false;
+							readJSON();
+							return true;
+						}
+					} else {
+						return false;
+					}
+				}
+			} catch (Exception exception) {
+				exception.printStackTrace();
+			}
+			return super.onFling(e1, e2, velocityX, velocityY);
+		}
 	}
 }
