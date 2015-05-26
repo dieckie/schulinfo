@@ -498,7 +498,7 @@ public class VertretungenView extends View {
 										if (y < y4 + 40) {
 											SelectedObject.set(classArrays[i].getJSONObject(i2));
 											viewflipper.showNext();
-											postInvalidate();
+											requestLayout();
 											break out;
 										} else {
 											y4 += 40;
@@ -560,7 +560,6 @@ public class VertretungenView extends View {
 			Log.e("JSON", "error", e);
 		}
 		requestLayout();
-		invalidate();
 	}
 
 	private final class GestureListener extends GestureDetector.SimpleOnGestureListener {

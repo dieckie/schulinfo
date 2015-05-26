@@ -11,13 +11,16 @@ import org.json.JSONObject;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
@@ -58,21 +61,17 @@ public class VertretungsInfo extends View {
 	 */
 	boolean hasDate = false;
 	/**
-	 * Ist das Rechteck des Feldes, das geklickt wurde. Ist nur für wenige Millisekunden nach dem Klick definiert, sonst ist es <code>null</code>. Wenn es nicht null ist, wird es in
-	 * {@link #onDraw(Canvas)} gezeichnet.
+	 * Ist das Rechteck des Feldes, das geklickt wurde. Ist nur für wenige Millisekunden nach dem Klick definiert, sonst ist es <code>null</code>. Wenn es nicht null ist, wird es in {@link #onDraw(Canvas)} gezeichnet.
 	 */
 	Rect clicked_rect;
+
 	/**
 	 * Das ausgewählte Vertretungsobjekt.<br>
 	 * <p>
-	 * Wenn in {@link #onClick(int, int)} ein Klick auf ein Vertretungsfeld zurück getrackt wird, wird in {@link #selectedObj} das {@link JSONObject} der Vertretung gespeichert. Wenn
-	 * {@link #onKeyDown(int, KeyEvent)} ein BACK-Event festgestellt wird, wird es wieder auf <code>null</code> gesetzt. Wenn es nicht null ist, wird in {@link #onDraw(Canvas)} die Infoanzeige eines
-	 * Vertretungsobjektes gezeichnet.
+	 * Wenn in {@link #onClick(int, int)} ein Klick auf ein Vertretungsfeld zurück getrackt wird, wird in {@link #selectedObj} das {@link JSONObject} der Vertretung gespeichert. Wenn {@link #onKeyDown(int, KeyEvent)} ein BACK-Event festgestellt wird,
+	 * wird es wieder auf <code>null</code> gesetzt. Wenn es nicht null ist, wird in {@link #onDraw(Canvas)} die Infoanzeige eines Vertretungsobjektes gezeichnet.
 	 * </p>
 	 */
-
-	int selectedTop = -1;
-
 	JSONObject selectedObj = null;
 	/**
 	 * Das ausgewählte Datum.<br>
@@ -86,6 +85,8 @@ public class VertretungsInfo extends View {
 	 * Der Parent-ScrollView.
 	 */
 	ScrollView scrollview;
+
+	Rect[] links = null;
 
 	ViewFlipper viewflipper;
 
@@ -136,7 +137,6 @@ public class VertretungsInfo extends View {
 			}
 		}
 		arrow_back = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.arrow_back_32);
-		setupInfoscreenOrder();
 	}
 
 	public void setupInfoscreenOrder() {
@@ -151,10 +151,11 @@ public class VertretungsInfo extends View {
 	/**
 	 * Malt den View.<br>
 	 * <p>
-	 * Fängt mit dem Navigationsmenü an und ruft dann in einer Schleife mit allen in den Einstellungen festgelegten Klassen {@link #drawClass(Canvas, String, JSONArray, int)} auf. Außerdem malt es,
-	 * wenn nötig Fehlermeldungen, das Rechteck des geklickten Feldes und das Informationsfenster zur Ausgewählten Vertretung.
+	 * Fängt mit dem Navigationsmenü an und ruft dann in einer Schleife mit allen in den Einstellungen festgelegten Klassen {@link #drawClass(Canvas, String, JSONArray, int)} auf. Außerdem malt es, wenn nötig Fehlermeldungen, das Rechteck des
+	 * geklickten Feldes und das Informationsfenster zur Ausgewählten Vertretung.
 	 * </p>
 	 */
+	@SuppressLint("DrawAllocation")
 	@Override
 	public void onDraw(Canvas canvas) {
 		Log.d("Method", "onDraw");
@@ -192,7 +193,7 @@ public class VertretungsInfo extends View {
 				} else {
 					artText = "Vertretung";
 				}
-				drawMultilineText(artText, 0, y, screen_w, 50, true, canvas, paint);
+				drawMultilineText(artText, 0, y, screen_w, 50, true, canvas, paint, false);
 				y += 50;
 				for (int i = 0; i < infoscreenOrder.length; i++) {
 					if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) != null) {
@@ -204,16 +205,46 @@ public class VertretungsInfo extends View {
 						}
 					}
 				}
+				y += 15;
 				if (!selectedObj.getString("kommentar").equals("")) {
-					canvas.drawText("Kommentar", ((screen_w - 60) - selectedPaint.measureText("Kommentar")) / 2 + 30, y + 10, selectedPaint);
-					y += 45;
-					y = drawMultilineText(selectedObj.getString("kommentar"), 30, y, screen_w - 60, 40, true, canvas, selectedPaint);
-				}
-				if (selectedObj.has("materialfiles")) {
-					if (selectedObj.has("materialkommentar")) {
-
+					Log.d("html", selectedObj.getString("kommentar"));
+					if (!(selectedObj.getString("kommentar").equals("#!#") || selectedObj.getString("kommentar").equals("#!!#"))) {
+						canvas.drawText("Kommentar", ((screen_w - 60) - paint.measureText("Kommentar")) / 2 + 30, y + 10, paint);
+						y += 45;
+						y = drawHTML(selectedObj.getString("kommentar"), 30, y, screen_w - 60, 30, canvas, selectedPaint, false);
+						y += 15;
 					}
 				}
+				if ((selectedObj.has("materialfiles") && selectedObj.getJSONArray("materialfiles").length() != 0) || selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
+					canvas.drawText("Materialien", ((screen_w - 60) - paint.measureText("Materialien")) / 2 + 30, y + 10, paint);
+					y += 45;
+					if (selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
+						y = drawHTML(selectedObj.getString("materialkommentar"), 30, y, screen_w - 60, 30, canvas, selectedPaint, false);
+						y += 15;
+					}
+					JSONArray materialfiles = selectedObj.getJSONArray("materialfiles");
+					links = new Rect[materialfiles.length()];
+					for (int i = 0; i < materialfiles.length(); i++) {
+						int y2 = drawLink(materialfiles.getJSONObject(i).getString("file"), 30, y, screen_w - 100, 30, canvas, selectedPaint, false);
+						links[i] = new Rect(25, y - (int) paint.getTextSize() + 6, screen_w - 70, y2 - (int) paint.getTextSize() + 8);
+						canvas.drawText(String.valueOf(materialfiles.getJSONObject(i).getInt("count")), screen_w - 60, y, selectedPaint);
+						y = y2;
+						Log.d("box", "i: " + i);
+						Log.d("box", "links: " + links);
+						Log.d("box", "top: " + links[i].top);
+						selectedPaint.setStyle(Paint.Style.STROKE);
+						canvas.drawRect(links[i], selectedPaint);
+						selectedPaint.setStyle(Paint.Style.FILL);
+					}
+					if (clicked_rect != null) {
+						paint.setColor(Color.BLUE);
+						paint.setAlpha(100);
+						canvas.drawRect(clicked_rect, paint);
+						paint.setColor(Color.BLACK);
+						paint.setAlpha(255);
+					}
+				}
+				Log.d("draw:height", String.valueOf(y));
 				selectedPaint.setStrokeWidth(2);
 				canvas.drawLine(0, height - 80, screen_w, height - 80, paint);
 				canvas.drawBitmap(arrow_back, (float) (screen_w * 0.5 - 32), height - 64, selectedPaint);
@@ -223,7 +254,7 @@ public class VertretungsInfo extends View {
 		}
 	}
 
-	public int drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint) {
+	public int drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint, boolean onlymeasure) {
 		String[] words = text.split(" ");
 		Log.d("Method", "DrawMultilineText");
 		int wordpos = 0;
@@ -233,13 +264,15 @@ public class VertretungsInfo extends View {
 				lineText += " " + words[wordpos];
 				wordpos++;
 			}
-			if (center) {
-				canvas.drawText(lineText, (float) (x + (width - paint.measureText(lineText)) * 0.5), y, paint);
-			} else {
-				canvas.drawText(lineText, x, y, paint);
+			if (!onlymeasure) {
+				if (center) {
+					canvas.drawText(lineText, (float) (x + (width - paint.measureText(lineText)) * 0.5), y, paint);
+				} else {
+					canvas.drawText(lineText, x, y, paint);
+				}
+				lineText = "";
+				y += lineheight;
 			}
-			lineText = "";
-			y += lineheight;
 		}
 		return (int) y;
 	}
@@ -274,6 +307,7 @@ public class VertretungsInfo extends View {
 		}
 	}
 
+	@SuppressLint("DrawAllocation")
 	@Override
 	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		Log.d("Method", "onMeasure");
@@ -285,9 +319,59 @@ public class VertretungsInfo extends View {
 		}
 		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight());
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
-		height = screen_h;
-		setMeasuredDimension(screen_w, screen_h);
-		Log.d("measure", "w: " + screen_w + ", h: " + screen_h + "2");
+		if (infoscreenValues.isEmpty()) {
+			setupInfoscreenOrder();
+		}
+		try {
+			if (SelectedObject.exists()) {
+				selectedObj = SelectedObject.get();
+				int y = 100;
+				paint.setTypeface(font);
+				paint.setTextSize(30);
+				selectedPaint.setTextSize(25);
+				selectedPaint.setTypeface(font);
+				selectedPaint.setStrokeWidth(1);
+				selectedPaint.setStyle(Paint.Style.FILL);
+				for (int i = 0; i < infoscreenOrder.length; i++) {
+					if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) != null) {
+						if (selectedObj.get(infoscreenValues.get(infoscreenOrder[i])) instanceof String && !selectedObj.get(infoscreenValues.get(infoscreenOrder[i])).equals("")) {
+							y += 30;
+						}
+					}
+				}
+				y += 15;
+				if (!selectedObj.getString("kommentar").equals("")) {
+					Log.d("html", selectedObj.getString("kommentar"));
+					if (!(selectedObj.getString("kommentar").equals("#!#") || selectedObj.getString("kommentar").equals("#!!#"))) {
+						y += 45;
+						y = drawHTML(selectedObj.getString("kommentar"), 30, y, screen_w - 60, 30, null, selectedPaint, true);
+						y += 15;
+					}
+				}
+				if ((selectedObj.has("materialfiles") && selectedObj.getJSONArray("materialfiles").length() != 0) || selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
+					y += 45;
+					if (selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
+						y = drawHTML(selectedObj.getString("materialkommentar"), 30, y, screen_w - 60, 30, null, selectedPaint, true);
+						y += 15;
+					}
+					JSONArray materialfiles = selectedObj.getJSONArray("materialfiles");
+					for (int i = 0; i < materialfiles.length(); i++) {
+						int y2 = drawLink(materialfiles.getJSONObject(i).getString("file"), 30, y, screen_w - 100, 30, null, selectedPaint, true);
+						y = y2;
+					}
+				}
+				y += 50;
+				height = y;
+				Log.d("measure", String.valueOf(y));
+			}
+		} catch (JSONException e) {
+			Log.e("error", "VertretungsInfo:onMeasure", e);
+		}
+		if (height < screen_h) {
+			height = screen_h;
+		}
+		setMeasuredDimension(screen_w, height);
+		Log.d("measure", "w: " + screen_w + ", h: " + height);
 	}
 
 	/**
@@ -305,8 +389,8 @@ public class VertretungsInfo extends View {
 	int yBegin = 0;
 
 	/**
-	 * Untersucht, ob ein Klick statt gefunden hat. Das bislang einzige Kriterium ist die Entfernung zwischen {@link MotionEvent#ACTION_DOWN} und {@link MotionEvent#ACTION_UP}. Diese muss kleiner als
-	 * 20 Pixel sein, dann wird {@link #onClick(int, int)} aufgerufen.
+	 * Untersucht, ob ein Klick statt gefunden hat. Das bislang einzige Kriterium ist die Entfernung zwischen {@link MotionEvent#ACTION_DOWN} und {@link MotionEvent#ACTION_UP}. Diese muss kleiner als 20 Pixel sein, dann wird
+	 * {@link #onClick(int, int)} aufgerufen.
 	 */
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
@@ -340,10 +424,41 @@ public class VertretungsInfo extends View {
 	 */
 	public void onClick(int x, int y) {
 		Log.d("Click", "x: " + x + ", y: " + y);
+		boolean found;
 		if (y > height - 80) {
 			SelectedObject.set(null);
 			viewflipper.showPrevious();
 			invalidate();
+			found = true;
+		} else {
+			if (links != null) {
+				out: for (int i = 0; i < links.length; i++) {
+					if (links[i].contains(x, y)) {
+						found = true;
+						try {
+							openInBrowser(selectedObj.getJSONArray("materialfiles").getJSONObject(i).getString("file"));
+							final int i2 = i;
+							new Thread(new Runnable() {
+								@Override
+								public synchronized void run() {
+									clicked_rect = links[i2];
+									postInvalidate();
+									try {
+										wait(300);
+									} catch (InterruptedException e) {
+										Log.e("error", "VertretungsInfo:onClick", e);
+									}
+									clicked_rect = null;
+									postInvalidate();
+								}
+							}).start();
+						} catch (JSONException e) {
+							Log.e("error", "VertretungsInfo:onClick", e);
+						}
+						break out;
+					}
+				}
+			}
 		}
 	}
 
@@ -352,14 +467,104 @@ public class VertretungsInfo extends View {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		Log.d("Touch", "Button");
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			Log.d("Touch", "Button_BACK");
 			SelectedObject.set(null);
 			viewflipper.showPrevious();
-			invalidate();
+			postInvalidate();
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
+	}
+
+	public int drawHTML(String htmltext, float x, float y, float width, float lineheight, Canvas canvas, Paint paint, boolean onlymeasure) {
+		Log.d("Method", "drawHTML");
+		float x2 = x;
+		String[] raute = htmltext.split("#");
+		int posTags = 0;
+		String[] tags = null;
+		if (raute.length == 3) {
+			if (!raute[2].equals("")) {
+				tags = raute[2].split("<|>");
+			}
+		} else if (raute.length == 1) {
+			tags = raute[0].split("<|>");
+		} else {
+			for (int i = 0; i < raute.length; i++) {
+				Log.d("error", raute[i]);
+			}
+			Log.wtf("raute", raute.length + "");
+		}
+		boolean isTag = false;
+		boolean isBold = false;
+		boolean isUnderlined = false;
+		while (posTags < tags.length) {
+			if (isTag) {
+				if (tags[posTags].equals("b")) {
+					isBold = true;
+				} else if (tags[posTags].equals("/b")) {
+					isBold = false;
+				} else if (tags[posTags].equals("u")) {
+					isUnderlined = true;
+				} else if (tags[posTags].equals("/u")) {
+					isUnderlined = false;
+				} else if (tags[posTags].equals("br") || tags[posTags].equals("/br")) {
+					y += lineheight;
+					x2 = x;
+				}
+			} else {
+				if (!tags[posTags].equals("")) {
+					String[] text = tags[posTags].split(" ");
+					int posWord = 0;
+					paint.setFakeBoldText(isBold);
+					paint.setUnderlineText(isUnderlined);
+					while (posWord < text.length) {
+						while (posWord < text.length && x2 + paint.measureText(text[posWord]) < width) {
+							if (!onlymeasure) {
+								canvas.drawText(text[posWord], x2, y, paint);
+							}
+							x2 += paint.measureText(text[posWord] + " ");
+							posWord++;
+						}
+						if (posWord < text.length) {
+							y += lineheight;
+							x2 = x;
+						}
+					}
+				}
+			}
+			isTag = !isTag;
+			posTags++;
+		}
+		paint.setUnderlineText(false);
+		paint.setFakeBoldText(false);
+		return (int) (y + lineheight);
+	}
+
+	public int drawLink(String link, float x, float y, float width, float lineheight, Canvas canvas, Paint paint, boolean onlymeasure) {
+		Log.d("Method", "DrawMultilineText");
+		paint.setUnderlineText(true);
+		paint.setColor(Color.rgb(0, 99, 236));
+		int charpos = 0;
+		String lineText = "";
+		while (charpos < link.length()) {
+			while (charpos < link.length() && paint.measureText(lineText + " " + link.charAt(charpos)) < width) {
+				lineText += link.charAt(charpos);
+				charpos++;
+			}
+			if (!onlymeasure) {
+				canvas.drawText(lineText, x, y, paint);
+			}
+			lineText = "";
+			y += lineheight;
+		}
+		paint.setUnderlineText(false);
+		paint.setColor(Color.BLACK);
+		return (int) y;
+	}
+
+	public void openInBrowser(String filename) {
+		Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://" + prefs.getString("url", "") + "/images/vertretungsmaterial/" + filename));
+		getContext().startActivity(browserIntent);
 	}
 }
