@@ -64,16 +64,14 @@ public class VertretungenView extends View {
 	 */
 	boolean hasDate = false;
 	/**
-	 * Ist das Rechteck des Feldes, das geklickt wurde. Ist nur für wenige Millisekunden nach dem Klick definiert, sonst ist es <code>null</code>. Wenn es nicht null ist, wird es in
-	 * {@link #onDraw(Canvas)} gezeichnet.
+	 * Ist das Rechteck des Feldes, das geklickt wurde. Ist nur für wenige Millisekunden nach dem Klick definiert, sonst ist es <code>null</code>. Wenn es nicht null ist, wird es in {@link #onDraw(Canvas)} gezeichnet.
 	 */
 	Rect clicked_rect;
 	/**
 	 * Das ausgewählte Vertretungsobjekt.<br>
 	 * <p>
-	 * Wenn in {@link #onClick(int, int)} ein Klick auf ein Vertretungsfeld zurück getrackt wird, wird in {@link #selectedObj} das {@link JSONObject} der Vertretung gespeichert. Wenn
-	 * {@link #onKeyDown(int, KeyEvent)} ein BACK-Event festgestellt wird, wird es wieder auf <code>null</code> gesetzt. Wenn es nicht null ist, wird in {@link #onDraw(Canvas)} die Infoanzeige eines
-	 * Vertretungsobjektes gezeichnet.
+	 * Wenn in {@link #onClick(int, int)} ein Klick auf ein Vertretungsfeld zurück getrackt wird, wird in {@link #selectedObj} das {@link JSONObject} der Vertretung gespeichert. Wenn {@link #onKeyDown(int, KeyEvent)} ein BACK-Event festgestellt wird,
+	 * wird es wieder auf <code>null</code> gesetzt. Wenn es nicht null ist, wird in {@link #onDraw(Canvas)} die Infoanzeige eines Vertretungsobjektes gezeichnet.
 	 * </p>
 	 */
 
@@ -163,8 +161,8 @@ public class VertretungenView extends View {
 	/**
 	 * Malt den View.<br>
 	 * <p>
-	 * Fängt mit dem Navigationsmenü an und ruft dann in einer Schleife mit allen in den Einstellungen festgelegten Klassen {@link #drawClass(Canvas, String, JSONArray, int)} auf. Außerdem malt es,
-	 * wenn nötig Fehlermeldungen, das Rechteck des geklickten Feldes und das Informationsfenster zur Ausgewählten Vertretung.
+	 * Fängt mit dem Navigationsmenü an und ruft dann in einer Schleife mit allen in den Einstellungen festgelegten Klassen {@link #drawClass(Canvas, String, JSONArray, int)} auf. Außerdem malt es, wenn nötig Fehlermeldungen, das Rechteck des
+	 * geklickten Feldes und das Informationsfenster zur Ausgewählten Vertretung.
 	 * </p>
 	 */
 	@Override
@@ -185,8 +183,8 @@ public class VertretungenView extends View {
 		if (viewflipper == null) {
 			viewflipper = (ViewFlipper) scrollview.getParent();
 		}
-		String date = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.GERMANY) + ", " + calendar.get(Calendar.DATE) + ". "
-				+ calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " " + calendar.get(Calendar.YEAR);
+		String date = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.GERMANY) + ", " + calendar.get(Calendar.DATE) + ". " + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " "
+				+ calendar.get(Calendar.YEAR);
 		canvas.drawText(date, screen_w / 5 + (screen_w - ((screen_w / 5) * 2)) / 2 - paint.measureText(date) / 2, 60, paint);
 		paint.setColor(Color.rgb(190, 190, 190));
 		String error = Errorpanel.getError();
@@ -425,8 +423,8 @@ public class VertretungenView extends View {
 	int yBegin = 0;
 
 	/**
-	 * Untersucht, ob ein Klick statt gefunden hat. Das bislang einzige Kriterium ist die Entfernung zwischen {@link MotionEvent#ACTION_DOWN} und {@link MotionEvent#ACTION_UP}. Diese muss kleiner als
-	 * 20 Pixel sein, dann wird {@link #onClick(int, int)} aufgerufen.
+	 * Untersucht, ob ein Klick statt gefunden hat. Das bislang einzige Kriterium ist die Entfernung zwischen {@link MotionEvent#ACTION_DOWN} und {@link MotionEvent#ACTION_UP}. Diese muss kleiner als 20 Pixel sein, dann wird
+	 * {@link #onClick(int, int)} aufgerufen.
 	 */
 	@SuppressLint("ClickableViewAccessibility")
 	@Override
@@ -498,7 +496,6 @@ public class VertretungenView extends View {
 										if (y < y4 + 40) {
 											SelectedObject.set(classArrays[i].getJSONObject(i2));
 											viewflipper.showNext();
-											requestLayout();
 											break out;
 										} else {
 											y4 += 40;
@@ -519,8 +516,8 @@ public class VertretungenView extends View {
 	}
 
 	/**
-	 * Zu erst holt die Methode sich neu alle Vertretungen von {@link Downloader}. Dann definiert es {@link #dateObj},{@link #hasDate} und {@link #classArrays} und sortiert es. Als letztes ruft es
-	 * {@link #requestLayout()} und {@link #invalidate()} auf.
+	 * Zu erst holt die Methode sich neu alle Vertretungen von {@link Downloader}. Dann definiert es {@link #dateObj},{@link #hasDate} und {@link #classArrays} und sortiert es. Als letztes ruft es {@link #requestLayout()} und {@link #invalidate()}
+	 * auf.
 	 */
 	public void readJSON() {
 		Log.d("Method", "readJSON");

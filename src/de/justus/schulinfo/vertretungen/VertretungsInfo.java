@@ -101,6 +101,8 @@ public class VertretungsInfo extends View {
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Typeface topic = Typeface.create("Consolas", Typeface.BOLD);
 
+	boolean debug = false;
+
 	public VertretungsInfo(Context context) {
 		super(context);
 		doAfterConstruct();
@@ -137,6 +139,7 @@ public class VertretungsInfo extends View {
 			}
 		}
 		arrow_back = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.arrow_back_32);
+		debug = prefs.getBoolean("debug", false);
 	}
 
 	public void setupInfoscreenOrder() {
@@ -159,6 +162,9 @@ public class VertretungsInfo extends View {
 	@Override
 	public void onDraw(Canvas canvas) {
 		Log.d("Method", "onDraw");
+		if(!selectedObj.equals(SelectedObject.get())){
+			requestLayout();
+		}
 		screen_w = canvas.getWidth();
 		paint.setStrokeWidth(2);
 		selectedObj = SelectedObject.get();
@@ -233,7 +239,9 @@ public class VertretungsInfo extends View {
 						Log.d("box", "links: " + links);
 						Log.d("box", "top: " + links[i].top);
 						selectedPaint.setStyle(Paint.Style.STROKE);
-						canvas.drawRect(links[i], selectedPaint);
+						if (debug) {
+							canvas.drawRect(links[i], selectedPaint);
+						}
 						selectedPaint.setStyle(Paint.Style.FILL);
 					}
 					if (clicked_rect != null) {
@@ -311,7 +319,6 @@ public class VertretungsInfo extends View {
 	@Override
 	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		Log.d("Method", "onMeasure");
-		Log.d("measure", "dateObj != null: " + String.valueOf(dateObj != null));
 		int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
 		int statusbar_height = 0;
 		if (resourceId > 0) {
@@ -322,10 +329,12 @@ public class VertretungsInfo extends View {
 		if (infoscreenValues.isEmpty()) {
 			setupInfoscreenOrder();
 		}
+		Log.d("measure", "SelectedObj.exists(): " + SelectedObject.exists());
 		try {
 			if (SelectedObject.exists()) {
 				selectedObj = SelectedObject.get();
 				int y = 100;
+				Log.d("measure", "1: " + y);
 				paint.setTypeface(font);
 				paint.setTextSize(30);
 				selectedPaint.setTextSize(25);
@@ -340,6 +349,7 @@ public class VertretungsInfo extends View {
 					}
 				}
 				y += 15;
+				Log.d("measure", "2: " + y);
 				if (!selectedObj.getString("kommentar").equals("")) {
 					Log.d("html", selectedObj.getString("kommentar"));
 					if (!(selectedObj.getString("kommentar").equals("#!#") || selectedObj.getString("kommentar").equals("#!!#"))) {
@@ -348,12 +358,14 @@ public class VertretungsInfo extends View {
 						y += 15;
 					}
 				}
+				Log.d("measure", "3: " + y);
 				if ((selectedObj.has("materialfiles") && selectedObj.getJSONArray("materialfiles").length() != 0) || selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
 					y += 45;
 					if (selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
 						y = drawHTML(selectedObj.getString("materialkommentar"), 30, y, screen_w - 60, 30, null, selectedPaint, true);
 						y += 15;
 					}
+					Log.d("measure", "4: " + y);
 					JSONArray materialfiles = selectedObj.getJSONArray("materialfiles");
 					for (int i = 0; i < materialfiles.length(); i++) {
 						int y2 = drawLink(materialfiles.getJSONObject(i).getString("file"), 30, y, screen_w - 100, 30, null, selectedPaint, true);
@@ -361,6 +373,7 @@ public class VertretungsInfo extends View {
 					}
 				}
 				y += 50;
+				Log.d("measure", "5: " + y);
 				height = y;
 				Log.d("measure", String.valueOf(y));
 			}

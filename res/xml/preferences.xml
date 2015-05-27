@@ -22,6 +22,12 @@
             android:key="class_select"
             android:summary="@string/class_small"
             android:title="@string/class_title" />
+
+        <CheckBoxPreference 
+            android:defaultValue="false"
+            android:key="debug"
+            android:summary="@string/debug_summary"
+            android:title="@string/debug_title"/>
     </PreferenceCategory>
 
 </PreferenceScreen>

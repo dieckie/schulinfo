@@ -10,17 +10,16 @@
     <string name="pw_dialog_title">Passwort</string>
     <string name="pw_small">Eventuell wurde von der Schule ein Passwort vergegen</string>
     <string name="pw_title">Passwort</string>
-    
+
     <!-- URL-Preferences -->
     <string name="url_protocol">http://</string>
     <string name="url_small">Die Internetadresse des Schulservers</string>
     <string name="url_title">URL</string>
     <string name="url_dialog_title">URL</string>
 
-    <!-- Navigation Drawer -->
-    <string name="contentDiscription">Eine Beschreibung</string>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
+    <!-- Debug-Preferences -->
+    <string name="debug_summary">Wechselt den Debug-Modus</string>
+    <string name="debug_title">Debug</string>
 
     <!-- Class-Preferences -->
     <string name="class_title">Klassen</string>
@@ -30,6 +29,12 @@
         <item>0</item>
         <item>1</item>
     </string-array>
+
+    <!-- Navigation Drawer -->
+    <string name="contentDiscription">Eine Beschreibung</string>
+    <string name="drawer_open">Open navigation drawer</string>
+    <string name="drawer_close">Close navigation drawer</string>
+
     <string-array name="empty_array"></string-array>
     <string-array name="fragment_names">
         <item>Vertretungen</item>
