@@ -19,13 +19,12 @@
     android:layout_height="wrap_content"
     android:layout_margin="0dp" >
 
-    <ScrollView
-        android:id="@+id/vertretungen_scrollview"
+    <LinearLayout
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" >
-
-        <de.justus.schulinfo.vertretungen.VertretungenView
-            android:id="@+id/vertretungen"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+        <de.justus.schulinfo.vertretungen.DateChanger
+            android:id="@+id/date_changer"
             android:layout_width="wrap_content"
             android:layout_height="100dp"
             android:layout_marginBottom="0dp"
@@ -34,8 +33,27 @@
             android:layout_marginTop="0dp"
             android:background="@android:color/background_light"
             android:clickable="true"
-            android:focusable="true" />
-    </ScrollView>
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
+        <ScrollView
+            android:id="@+id/vertretungen_scrollview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" >
+
+        	<de.justus.schulinfo.vertretungen.VertretungenView
+                android:id="@+id/vertretungen"
+                android:layout_width="wrap_content"
+                android:layout_height="100dp"
+                android:layout_marginBottom="0dp"
+                android:layout_marginLeft="0dp"
+                android:layout_marginRight="0dp"
+                android:layout_marginTop="0dp"
+                android:background="@android:color/background_light"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true" />
+        </ScrollView>
+    </LinearLayout>
 
     <ScrollView
         android:id="@+id/vertretungen_scrollview2"
@@ -52,7 +70,8 @@
             android:layout_marginTop="0dp"
             android:background="@android:color/background_light"
             android:clickable="true"
-            android:focusable="true" />
+            android:focusable="true"
+            android:focusableInTouchMode="true" />
     </ScrollView>
 
 </ViewFlipper>

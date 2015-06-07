@@ -396,14 +396,15 @@ public class VertretungenView extends View {
 					height = screen_h;
 				}
 				setMeasuredDimension(screen_w, height);
-				Log.d("measure", "w: " + screen_w + ", h: " + height + "1");
+				Log.d("measure", "w: " + screen_w + ", h: " + height + ", 1");
 			} catch (JSONException e) {
 				Log.e("error", "onMeasure", e);
 			}
 		} else {
 			height = screen_h;
 			setMeasuredDimension(screen_w, screen_h);
-			Log.d("measure", "w: " + screen_w + ", h: " + screen_h + "2");
+			Log.d("measure", "w: " + screen_w + ", h: " + screen_h + ", 2");
+			invalidate();
 		}
 		Log.d("Method", "onMeasure_Finished");
 	}

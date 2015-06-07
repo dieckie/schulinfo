@@ -20,10 +20,13 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.inputmethodservice.Keyboard;
+import android.inputmethodservice.Keyboard.Key;
 import android.net.Uri;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.KeyCharacterMap;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -138,6 +141,8 @@ public class VertretungsInfo extends View {
 				Log.e("error", "doAfterConstruct", e);
 			}
 		}
+		setFocusable(true);
+		setFocusableInTouchMode(true);
 		arrow_back = BitmapFactory.decodeResource(MainActivity.context.getResources(), R.drawable.arrow_back_32);
 		debug = prefs.getBoolean("debug", false);
 	}
@@ -161,8 +166,9 @@ public class VertretungsInfo extends View {
 	@SuppressLint("DrawAllocation")
 	@Override
 	public void onDraw(Canvas canvas) {
-		Log.d("Method", "onDraw");
-		if(!selectedObj.equals(SelectedObject.get())){
+		Log.d("Method", "VertretungsInfo:onDraw");
+		// TODO Else hinzufügen, selectedObj aber auch in if festlegen.
+		if (SelectedObject.exists() && !selectedObj.equals(SelectedObject.get())) {
 			requestLayout();
 		}
 		screen_w = canvas.getWidth();
@@ -213,7 +219,7 @@ public class VertretungsInfo extends View {
 				}
 				y += 15;
 				if (!selectedObj.getString("kommentar").equals("")) {
-					Log.d("html", selectedObj.getString("kommentar"));
+					Log.d("html", "VertretungsInfo:" + selectedObj.getString("kommentar"));
 					if (!(selectedObj.getString("kommentar").equals("#!#") || selectedObj.getString("kommentar").equals("#!!#"))) {
 						canvas.drawText("Kommentar", ((screen_w - 60) - paint.measureText("Kommentar")) / 2 + 30, y + 10, paint);
 						y += 45;
@@ -252,19 +258,19 @@ public class VertretungsInfo extends View {
 						paint.setAlpha(255);
 					}
 				}
-				Log.d("draw:height", String.valueOf(y));
+				Log.d("draw:height", "VertretungsInfo:" + String.valueOf(y));
 				selectedPaint.setStrokeWidth(2);
 				canvas.drawLine(0, height - 80, screen_w, height - 80, paint);
 				canvas.drawBitmap(arrow_back, (float) (screen_w * 0.5 - 32), height - 64, selectedPaint);
 			} catch (JSONException e) {
-				Log.e("error", "onDraw", e);
+				Log.e("error", "VertretungsInfo:onDraw", e);
 			}
 		}
 	}
 
 	public int drawMultilineText(String text, float x, float y, float width, float lineheight, boolean center, Canvas canvas, Paint paint, boolean onlymeasure) {
 		String[] words = text.split(" ");
-		Log.d("Method", "DrawMultilineText");
+		Log.d("Method", "VertretungsInfo:DrawMultilineText");
 		int wordpos = 0;
 		String lineText = "";
 		while (wordpos < words.length) {
@@ -311,14 +317,14 @@ public class VertretungsInfo extends View {
 				canvas.drawText(text, x + (widthfield - paint.measureText(text)) / 2, y, paint);
 			}
 		} catch (JSONException e) {
-			Log.e("error", "drawTextNotNull", e);
+			Log.e("error", "VertretungsInfo:drawTextNotNull", e);
 		}
 	}
 
 	@SuppressLint("DrawAllocation")
 	@Override
 	public void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
-		Log.d("Method", "onMeasure");
+		Log.d("Method", "VertretungsInfo:onMeasure");
 		int resourceId = getResources().getIdentifier("status_bar_height", "dimen", "android");
 		int statusbar_height = 0;
 		if (resourceId > 0) {
@@ -329,12 +335,12 @@ public class VertretungsInfo extends View {
 		if (infoscreenValues.isEmpty()) {
 			setupInfoscreenOrder();
 		}
-		Log.d("measure", "SelectedObj.exists(): " + SelectedObject.exists());
+		Log.d("measure", "VertretungsInfo:SelectedObj.exists(): " + SelectedObject.exists());
 		try {
 			if (SelectedObject.exists()) {
 				selectedObj = SelectedObject.get();
 				int y = 100;
-				Log.d("measure", "1: " + y);
+				Log.d("measure", "VertretungsInfo:1: " + y);
 				paint.setTypeface(font);
 				paint.setTextSize(30);
 				selectedPaint.setTextSize(25);
@@ -349,7 +355,7 @@ public class VertretungsInfo extends View {
 					}
 				}
 				y += 15;
-				Log.d("measure", "2: " + y);
+				Log.d("measure", "VertretungsInfo:2: " + y);
 				if (!selectedObj.getString("kommentar").equals("")) {
 					Log.d("html", selectedObj.getString("kommentar"));
 					if (!(selectedObj.getString("kommentar").equals("#!#") || selectedObj.getString("kommentar").equals("#!!#"))) {
@@ -358,22 +364,23 @@ public class VertretungsInfo extends View {
 						y += 15;
 					}
 				}
-				Log.d("measure", "3: " + y);
+				Log.d("measure", "VertretungsInfo:3: " + y);
 				if ((selectedObj.has("materialfiles") && selectedObj.getJSONArray("materialfiles").length() != 0) || selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
 					y += 45;
 					if (selectedObj.has("materialkommentar") && !selectedObj.getString("materialkommentar").equals("")) {
 						y = drawHTML(selectedObj.getString("materialkommentar"), 30, y, screen_w - 60, 30, null, selectedPaint, true);
 						y += 15;
 					}
-					Log.d("measure", "4: " + y);
+					Log.d("measure", "VertretungsInfo:4: " + y);
 					JSONArray materialfiles = selectedObj.getJSONArray("materialfiles");
 					for (int i = 0; i < materialfiles.length(); i++) {
 						int y2 = drawLink(materialfiles.getJSONObject(i).getString("file"), 30, y, screen_w - 100, 30, null, selectedPaint, true);
 						y = y2;
+						y += 10;
 					}
 				}
 				y += 50;
-				Log.d("measure", "5: " + y);
+				Log.d("measure", "VertretungsInfo:5: " + y);
 				height = y;
 				Log.d("measure", String.valueOf(y));
 			}
@@ -384,7 +391,7 @@ public class VertretungsInfo extends View {
 			height = screen_h;
 		}
 		setMeasuredDimension(screen_w, height);
-		Log.d("measure", "w: " + screen_w + ", h: " + height);
+		Log.d("measure", "VertretungsInfo: w: " + screen_w + ", h: " + height);
 	}
 
 	/**
@@ -437,18 +444,15 @@ public class VertretungsInfo extends View {
 	 */
 	public void onClick(int x, int y) {
 		Log.d("Click", "x: " + x + ", y: " + y);
-		boolean found;
 		if (y > height - 80) {
 			SelectedObject.set(null);
 			viewflipper.showPrevious();
-			invalidate();
-			found = true;
 		} else {
 			if (links != null) {
 				out: for (int i = 0; i < links.length; i++) {
 					if (links[i].contains(x, y)) {
-						found = true;
 						try {
+
 							openInBrowser(selectedObj.getJSONArray("materialfiles").getJSONObject(i).getString("file"));
 							final int i2 = i;
 							new Thread(new Runnable() {
@@ -480,18 +484,18 @@ public class VertretungsInfo extends View {
 	 */
 	@Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
+		Log.d("Touch", "VertretungsInfo:" + KeyEvent.keyCodeToString(keyCode));
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
-			Log.d("Touch", "Button_BACK");
+			Log.d("Touch", "VertretungsInfo: Button_BACK");
 			SelectedObject.set(null);
 			viewflipper.showPrevious();
-			postInvalidate();
 			return true;
 		}
 		return super.onKeyDown(keyCode, event);
 	}
 
 	public int drawHTML(String htmltext, float x, float y, float width, float lineheight, Canvas canvas, Paint paint, boolean onlymeasure) {
-		Log.d("Method", "drawHTML");
+		Log.d("Method", "VertretungsInfo:drawHTML");
 		float x2 = x;
 		String[] raute = htmltext.split("#");
 		int posTags = 0;
@@ -555,7 +559,7 @@ public class VertretungsInfo extends View {
 	}
 
 	public int drawLink(String link, float x, float y, float width, float lineheight, Canvas canvas, Paint paint, boolean onlymeasure) {
-		Log.d("Method", "DrawMultilineText");
+		Log.d("Method", "VertretungsInfo:DrawMultilineText");
 		paint.setUnderlineText(true);
 		paint.setColor(Color.rgb(0, 99, 236));
 		int charpos = 0;
