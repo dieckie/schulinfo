@@ -181,7 +181,7 @@ public class VertretungenView extends View {
 			scrollview = (ScrollView) getParent();
 		}
 		if (viewflipper == null) {
-			viewflipper = (ViewFlipper) scrollview.getParent();
+			viewflipper = (ViewFlipper) scrollview.getParent().getParent();
 		}
 		String date = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.GERMANY) + ", " + calendar.get(Calendar.DATE) + ". " + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " "
 				+ calendar.get(Calendar.YEAR);

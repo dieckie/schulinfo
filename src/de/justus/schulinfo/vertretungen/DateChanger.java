@@ -15,7 +15,7 @@ import android.view.View;
 
 public class DateChanger extends View {
 
-	int screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
+	int screen_w;
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Paint paint = new Paint();
 
@@ -38,13 +38,13 @@ public class DateChanger extends View {
 	 * Gehört mit zum Konstructor dazu.
 	 */
 	public void doAfterConstruct() {
-
+		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
 	}
 
 	@Override
 	protected void onDraw(Canvas canvas) {
 		paint.setStrokeWidth(1);
-		canvas.drawLine(0, 90, screen_w, 90, paint);
+		canvas.drawLine(0, 89, screen_w, 89, paint);
 		canvas.drawLine(screen_w / 5, 0, screen_w / 5, 90, paint);
 		canvas.drawLine(screen_w - (screen_w / 5), 0, screen_w - (screen_w / 5), 90, paint);
 		paint.setTypeface(font);
@@ -56,7 +56,7 @@ public class DateChanger extends View {
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
-		setMeasuredDimension(screen_w, 100);
+		setMeasuredDimension(screen_w, 90);
 	}
 
 	int xBegin = 0;

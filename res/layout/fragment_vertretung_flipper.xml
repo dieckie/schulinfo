@@ -19,7 +19,7 @@
     android:layout_height="wrap_content"
     android:layout_margin="0dp" >
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="horizontal">
@@ -34,12 +34,13 @@
             android:background="@android:color/background_light"
             android:clickable="true"
             android:focusable="true"
-            android:focusableInTouchMode="true" />
+            android:focusableInTouchMode="true"
+            android:layout_alignParentTop="true" />
         <ScrollView
             android:id="@+id/vertretungen_scrollview"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" >
-
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/date_changer">
         	<de.justus.schulinfo.vertretungen.VertretungenView
                 android:id="@+id/vertretungen"
                 android:layout_width="wrap_content"
@@ -53,7 +54,7 @@
                 android:focusable="true"
                 android:focusableInTouchMode="true" />
         </ScrollView>
-    </LinearLayout>
+    </RelativeLayout>
 
     <ScrollView
         android:id="@+id/vertretungen_scrollview2"
