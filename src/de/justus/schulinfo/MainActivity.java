@@ -7,6 +7,7 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import de.justus.schulinfo.vertretungen.VertretungenView;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -46,6 +47,7 @@ public class MainActivity extends Activity {
 	public static Downloader downloader;
 	public static SharedPreferences prefs;
 	public static ActionBar actionbar;
+	public static VertretungenView vertretungen_view;
 	String s = "";
 
 	@Override
@@ -229,6 +231,7 @@ public class MainActivity extends Activity {
 			//TODO Wieder zurück ändern?
 			ViewFlipper rootView = (ViewFlipper) inflater.inflate(R.layout.fragment_vertretung_flipper, container, false);
 			getActivity().setTitle("Vertretungen");
+			rootView.findViewById(R.id.vertretungen);
 			return rootView;
 		}
 	}

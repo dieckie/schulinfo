@@ -1,8 +1,5 @@
 package de.justus.schulinfo.vertretungen;
 
-import java.util.Calendar;
-import java.util.Locale;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -10,14 +7,19 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.RelativeLayout;
+import de.justus.schulinfo.MainActivity;
+import de.justus.schulinfo.R;
 
 public class DateChanger extends View {
 
 	int screen_w;
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Paint paint = new Paint();
+	VertretungenView vertretungen;
 
 	public DateChanger(Context context) {
 		super(context);
@@ -39,6 +41,7 @@ public class DateChanger extends View {
 	 */
 	public void doAfterConstruct() {
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
+		vertretungen = (VertretungenView) getRootView().findViewById(R.id.vertretungen);
 	}
 
 	@Override
@@ -99,8 +102,11 @@ public class DateChanger extends View {
 	public void onClick(int x, int y) {
 		Log.d("Click", "x: " + x + ", y: " + y);
 		if (x < screen_w / 5) {
+			vertretungen.changeDate(-1);
 		} else if (x > screen_w - screen_w / 5) {
+			vertretungen.changeDate(1);
 		} else {
+			vertretungen.changeDate(0);
 		}
 	}
 }

@@ -516,6 +516,27 @@ public class VertretungenView extends View {
 		}
 	}
 
+	public void changeDate(int change) {
+		switch (change) {
+		case -1:
+			calendar.add(Calendar.DATE, -1);
+			hasDate = false;
+			readJSON();
+			break;
+		case 0:
+			calendar = Calendar.getInstance(Locale.GERMANY);
+			hasDate = false;
+			readJSON();
+			break;
+		case 1:
+			calendar.add(Calendar.DATE, 1);
+			hasDate = false;
+			readJSON();
+		default:
+			break;
+		}
+	}
+
 	/**
 	 * Zu erst holt die Methode sich neu alle Vertretungen von {@link Downloader}. Dann definiert es {@link #dateObj},{@link #hasDate} und {@link #classArrays} und sortiert es. Als letztes ruft es {@link #requestLayout()} und {@link #invalidate()}
 	 * auf.
