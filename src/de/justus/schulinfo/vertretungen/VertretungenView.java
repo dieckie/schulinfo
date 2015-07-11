@@ -99,7 +99,7 @@ public class VertretungenView extends View {
 	private HashSet<String> empty = new HashSet<String>();
 
 	Bitmap arrow_back;
-	
+
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Typeface topic = Typeface.create("Consolas", Typeface.BOLD);
 
@@ -170,22 +170,14 @@ public class VertretungenView extends View {
 		Log.d("Method", "onDraw");
 		screen_w = canvas.getWidth();
 		paint.setStrokeWidth(1);
-		canvas.drawLine(0, 90, screen_w, 90, paint);
-		canvas.drawLine(screen_w / 5, 0, screen_w / 5, 90, paint);
-		canvas.drawLine(screen_w - (screen_w / 5), 0, screen_w - (screen_w / 5), 90, paint);
 		paint.setTypeface(font);
-		paint.setTextSize(30);
-		canvas.drawText("<<", screen_w / 10 - 15, 60, paint);
-		canvas.drawText(">>", screen_w - (screen_w / 10 + 15), 60, paint);
+		paint.setTextSize(25);
 		if (scrollview == null) {
 			scrollview = (ScrollView) getParent();
 		}
 		if (viewflipper == null) {
 			viewflipper = (ViewFlipper) scrollview.getParent().getParent();
 		}
-		String date = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.GERMANY) + ", " + calendar.get(Calendar.DATE) + ". " + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " "
-				+ calendar.get(Calendar.YEAR);
-		canvas.drawText(date, screen_w / 5 + (screen_w - ((screen_w / 5) * 2)) / 2 - paint.measureText(date) / 2, 60, paint);
 		paint.setColor(Color.rgb(190, 190, 190));
 		String error = Errorpanel.getError();
 		Log.d("errorpanel", error);
@@ -200,7 +192,7 @@ public class VertretungenView extends View {
 			Log.d("Prefs", "länge: " + gewaehlteKlassen.size());
 			boolean drewsth = false;
 			if (classArrays != null) {
-				int y = 100;
+				int y = 0;
 				try {
 					for (int i = 0; i < classArrays.length; i++) {
 						String className = classArrays[i].getJSONObject(0).getString("klasse");
@@ -381,7 +373,7 @@ public class VertretungenView extends View {
 		if (dateObj != null) {
 			try {
 				Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-				height = 110;
+				height = 10;
 				for (int i = 0; i < classArrays.length; i++) {
 					String className = classArrays[i].getJSONObject(0).getString("klasse");
 					if (gewaehlteKlassen.contains(className)) {
@@ -459,58 +451,42 @@ public class VertretungenView extends View {
 	 */
 	public void onClick(int x, int y) {
 		Log.d("Click", "VertretungenView: x: " + x + ", y: " + y);
-		if (y < 90) {
-			if (x < screen_w / 5) {
-				calendar.add(Calendar.DATE, -1);
-				hasDate = false;
-				readJSON();
-			} else if (x > screen_w - screen_w / 5) {
-				calendar.add(Calendar.DATE, 1);
-				hasDate = false;
-				readJSON();
-			} else {
-				calendar = Calendar.getInstance(Locale.GERMANY);
-				hasDate = false;
-				readJSON();
-			}
-		} else {
-			if (dateObj != null) {
-				int y2 = 100;
-				out: for (int i = 0; i < classArrays.length; i++) {
-					try {
-						boolean containsClass = false;
-						String className = classArrays[i].getJSONObject(0).getString("klasse");
-						Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-						if (gewaehlteKlassen.contains(className)) {
-							containsClass = true;
-						} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
-							containsClass = true;
-						} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
-							containsClass = true;
-						}
-						if (containsClass) {
-							int y3 = y2 + classArrays[i].length() * 40 + 110;
-							if (y < y3) {
-								int y4 = y2 + 100;
-								if (y >= y4) {
-									for (int i2 = 0; i2 < classArrays[i].length(); i2++) {
-										if (y < y4 + 40) {
-											SelectedObject.set(classArrays[i].getJSONObject(i2));
-											viewflipper.showNext();
-											break out;
-										} else {
-											y4 += 40;
-										}
+		if (dateObj != null) {
+			int y2 = 0;
+			out: for (int i = 0; i < classArrays.length; i++) {
+				try {
+					boolean containsClass = false;
+					String className = classArrays[i].getJSONObject(0).getString("klasse");
+					Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
+					if (gewaehlteKlassen.contains(className)) {
+						containsClass = true;
+					} else if (className.equals("Jgst. Q1") && gewaehlteKlassen.contains("Q1")) {
+						containsClass = true;
+					} else if (className.equals("Jgst. Q2") && gewaehlteKlassen.contains("Q2")) {
+						containsClass = true;
+					}
+					if (containsClass) {
+						int y3 = y2 + classArrays[i].length() * 40 + 110;
+						if (y < y3) {
+							int y4 = y2 + 100;
+							if (y >= y4) {
+								for (int i2 = 0; i2 < classArrays[i].length(); i2++) {
+									if (y < y4 + 40) {
+										SelectedObject.set(classArrays[i].getJSONObject(i2));
+										viewflipper.showNext();
+										break out;
+									} else {
+										y4 += 40;
 									}
 								}
-								break out;
-							} else {
-								y2 = y3;
 							}
+							break out;
+						} else {
+							y2 = y3;
 						}
-					} catch (JSONException e2) {
-						e2.printStackTrace();
 					}
+				} catch (JSONException e2) {
+					e2.printStackTrace();
 				}
 			}
 		}

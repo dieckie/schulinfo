@@ -1,5 +1,8 @@
 package de.justus.schulinfo.vertretungen;
 
+import java.util.Calendar;
+import java.util.Locale;
+
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Canvas;
@@ -20,6 +23,7 @@ public class DateChanger extends View {
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Paint paint = new Paint();
 	VertretungenView vertretungen;
+	Calendar calendar = Calendar.getInstance();
 
 	public DateChanger(Context context) {
 		super(context);
@@ -55,6 +59,9 @@ public class DateChanger extends View {
 		paint.setTextSize(30);
 		canvas.drawText("<<", screen_w / 10 - 15, 60, paint);
 		canvas.drawText(">>", screen_w - (screen_w / 10 + 15), 60, paint);
+		String date = calendar.getDisplayName(Calendar.DAY_OF_WEEK, Calendar.SHORT, Locale.GERMANY) + ", " + calendar.get(Calendar.DATE) + ". " + calendar.getDisplayName(Calendar.MONTH, Calendar.SHORT, Locale.GERMANY) + " "
+				+ calendar.get(Calendar.YEAR);
+		canvas.drawText(date, screen_w / 5 + (screen_w - ((screen_w / 5) * 2)) / 2 - paint.measureText(date) / 2, 60, paint);
 	}
 
 	@Override
@@ -105,10 +112,16 @@ public class DateChanger extends View {
 		Log.d("Click", "x: " + x + ", y: " + y);
 		if (x < screen_w / 5) {
 			MainActivity.vertretungen_view.changeDate(-1);
+			calendar.add(Calendar.DATE, -1);
+			invalidate();
 		} else if (x > screen_w - screen_w / 5) {
 			MainActivity.vertretungen_view.changeDate(1);
+			calendar.add(Calendar.DATE, 1);
+			invalidate();
 		} else {
 			MainActivity.vertretungen_view.changeDate(0);
+			calendar = Calendar.getInstance();
+			invalidate();
 		}
 	}
 }
