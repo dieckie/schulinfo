@@ -47,7 +47,7 @@ public class MainActivity extends Activity {
 	public static Downloader downloader;
 	public static SharedPreferences prefs;
 	public static ActionBar actionbar;
-	public static VertretungenView vertretungen_view;
+	public static VertretungenView vertretungen_view;  
 	String s = "";
 
 	@Override
@@ -229,9 +229,9 @@ public class MainActivity extends Activity {
 		@Override
 		public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 			//TODO Wieder zurück ändern?
-			ViewFlipper rootView = (ViewFlipper) inflater.inflate(R.layout.fragment_vertretung_flipper, container, false);
+			View rootView = inflater.inflate(R.layout.fragment_vertretung_flipper, container, false);
 			getActivity().setTitle("Vertretungen");
-			rootView.findViewById(R.id.vertretungen);
+			vertretungen_view = (VertretungenView) rootView.findViewById(R.id.vertretungen);
 			return rootView;
 		}
 	}

@@ -41,7 +41,8 @@ public class DateChanger extends View {
 	 */
 	public void doAfterConstruct() {
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
-		vertretungen = (VertretungenView) getRootView().findViewById(R.id.vertretungen);
+		vertretungen = MainActivity.vertretungen_view;
+		Log.d("Vertretungen-Obj", MainActivity.vertretungen_view + "");
 	}
 
 	@Override
@@ -82,6 +83,7 @@ public class DateChanger extends View {
 		case MotionEvent.ACTION_UP:
 			if (Math.abs(xBegin - x) < 20 && Math.abs(yBegin - y) < 20) {
 				onClick(x, y);
+				return true;
 			} else {
 				Log.d("Click", Math.abs(xBegin - x) + " / " + Math.abs(yBegin - y));
 			}
@@ -102,11 +104,11 @@ public class DateChanger extends View {
 	public void onClick(int x, int y) {
 		Log.d("Click", "x: " + x + ", y: " + y);
 		if (x < screen_w / 5) {
-			vertretungen.changeDate(-1);
+			MainActivity.vertretungen_view.changeDate(-1);
 		} else if (x > screen_w - screen_w / 5) {
-			vertretungen.changeDate(1);
+			MainActivity.vertretungen_view.changeDate(1);
 		} else {
-			vertretungen.changeDate(0);
+			MainActivity.vertretungen_view.changeDate(0);
 		}
 	}
 }

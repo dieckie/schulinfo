@@ -99,7 +99,7 @@ public class VertretungenView extends View {
 	private HashSet<String> empty = new HashSet<String>();
 
 	Bitmap arrow_back;
-
+	
 	Typeface font = Typeface.create("Roboto", Typeface.NORMAL);
 	Typeface topic = Typeface.create("Consolas", Typeface.BOLD);
 
@@ -458,7 +458,7 @@ public class VertretungenView extends View {
 	 *            Die Y-Koordinate des Klicks
 	 */
 	public void onClick(int x, int y) {
-		Log.d("Click", "x: " + x + ", y: " + y);
+		Log.d("Click", "VertretungenView: x: " + x + ", y: " + y);
 		if (y < 90) {
 			if (x < screen_w / 5) {
 				calendar.add(Calendar.DATE, -1);

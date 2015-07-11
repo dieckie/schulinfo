@@ -65,7 +65,7 @@ public class Errorpanel {
 					} else {
 						Set<String> set = MainActivity.prefs.getStringSet("class_select", new HashSet<String>());
 						if (set.isEmpty()) {
-							error = "Du hast Klassen ausgewählt, bitte wähle welche in den Einstellungen aus.";
+							error = "Du hast keine Klassen ausgewählt, bitte wähle welche in den Einstellungen aus.";
 						}
 					}
 				} catch (JSONException e) {

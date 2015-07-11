@@ -34,7 +34,6 @@ public class EinstellungenFragment extends PreferenceFragment {
 					e.printStackTrace();
 				}
 			}
-			// TODO Hier zwingend notwendig, die IDs der Klassen zu benutzen, oder gehen auch einfach die Namen?
 
 			multi.setEntries(entries);
 			multi.setEntryValues(entries);
@@ -49,4 +48,5 @@ public class EinstellungenFragment extends PreferenceFragment {
 		Log.d("Prefs", preference.getKey());
 		return super.onPreferenceTreeClick(preferenceScreen, preference);
 	}
+
 }
