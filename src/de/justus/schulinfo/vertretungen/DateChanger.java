@@ -10,12 +10,9 @@ import android.graphics.Paint;
 import android.graphics.Typeface;
 import android.util.AttributeSet;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.MotionEvent;
 import android.view.View;
-import android.widget.RelativeLayout;
 import de.justus.schulinfo.MainActivity;
-import de.justus.schulinfo.R;
 
 public class DateChanger extends View {
 
@@ -45,8 +42,41 @@ public class DateChanger extends View {
 	 */
 	public void doAfterConstruct() {
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
-		vertretungen = MainActivity.vertretungen_view;
-		Log.d("Vertretungen-Obj", MainActivity.vertretungen_view + "");
+		final DateChanger dc = this;
+		new Thread(new Runnable() {
+			@Override
+			public synchronized void run() {
+				while (vertretungen == null) {
+					try {
+						wait(5);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					vertretungen = MainActivity.vertretungen_view;
+					Log.d("Vertretungen-Obj", MainActivity.vertretungen_view + "");
+				}
+				vertretungen.registerDateChanger(dc);
+			}
+		}).start();
+
+	}
+
+	public void changeDate(int change) {
+		switch (change) {
+		case -1:
+			calendar.add(Calendar.DATE, -1);
+			invalidate();
+			break;
+		case 0:
+			calendar = Calendar.getInstance(Locale.GERMANY);
+			invalidate();
+			break;
+		case 1:
+			calendar.add(Calendar.DATE, 1);
+			invalidate();
+		default:
+			break;
+		}
 	}
 
 	@Override
@@ -112,16 +142,13 @@ public class DateChanger extends View {
 		Log.d("Click", "x: " + x + ", y: " + y);
 		if (x < screen_w / 5) {
 			MainActivity.vertretungen_view.changeDate(-1);
-			calendar.add(Calendar.DATE, -1);
-			invalidate();
+			changeDate(-1);
 		} else if (x > screen_w - screen_w / 5) {
 			MainActivity.vertretungen_view.changeDate(1);
-			calendar.add(Calendar.DATE, 1);
-			invalidate();
+			changeDate(1);
 		} else {
 			MainActivity.vertretungen_view.changeDate(0);
-			calendar = Calendar.getInstance();
-			invalidate();
+			changeDate(0);
 		}
 	}
 }

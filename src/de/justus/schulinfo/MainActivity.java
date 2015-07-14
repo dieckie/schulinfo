@@ -7,7 +7,6 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-import de.justus.schulinfo.vertretungen.VertretungenView;
 import android.app.ActionBar;
 import android.app.Activity;
 import android.app.Fragment;
@@ -29,7 +28,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.ViewFlipper;
+import de.justus.schulinfo.vertretungen.VertretungenView;
 
 @SuppressWarnings("deprecation")
 public class MainActivity extends Activity {

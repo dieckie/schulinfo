@@ -76,6 +76,11 @@ public class VertretungenView extends View {
 	 */
 
 	int selectedTop = -1;
+	
+	/**
+	 * Das genutzte DateChanger-Object
+	 */
+	DateChanger datechanger;
 
 	/**
 	 * Das ausgewählte Datum.<br>
@@ -128,7 +133,7 @@ public class VertretungenView extends View {
 		if (resourceId > 0) {
 			statusbar_height = getResources().getDimensionPixelSize(resourceId);
 		}
-		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight());
+		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight()  + 90);
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
 		setFocusableInTouchMode(true);
 		if (!Downloader.downloaded) {
@@ -192,7 +197,7 @@ public class VertretungenView extends View {
 			Log.d("Prefs", "länge: " + gewaehlteKlassen.size());
 			boolean drewsth = false;
 			if (classArrays != null) {
-				int y = 0;
+				int y = 10;
 				try {
 					for (int i = 0; i < classArrays.length; i++) {
 						String className = classArrays[i].getJSONObject(0).getString("klasse");
@@ -368,12 +373,12 @@ public class VertretungenView extends View {
 		if (resourceId > 0) {
 			statusbar_height = getResources().getDimensionPixelSize(resourceId);
 		}
-		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight());
+		screen_h = getContext().getResources().getDisplayMetrics().heightPixels - (statusbar_height + MainActivity.actionbar.getHeight() + 90);
 		screen_w = getContext().getResources().getDisplayMetrics().widthPixels;
 		if (dateObj != null) {
 			try {
 				Set<String> gewaehlteKlassen = prefs.getStringSet("class_select", empty);
-				height = 10;
+				height = 20;
 				for (int i = 0; i < classArrays.length; i++) {
 					String className = classArrays[i].getJSONObject(0).getString("klasse");
 					if (gewaehlteKlassen.contains(className)) {
@@ -452,7 +457,7 @@ public class VertretungenView extends View {
 	public void onClick(int x, int y) {
 		Log.d("Click", "VertretungenView: x: " + x + ", y: " + y);
 		if (dateObj != null) {
-			int y2 = 0;
+			int y2 = 10;
 			out: for (int i = 0; i < classArrays.length; i++) {
 				try {
 					boolean containsClass = false;
@@ -496,21 +501,17 @@ public class VertretungenView extends View {
 		switch (change) {
 		case -1:
 			calendar.add(Calendar.DATE, -1);
-			hasDate = false;
-			readJSON();
 			break;
 		case 0:
 			calendar = Calendar.getInstance(Locale.GERMANY);
-			hasDate = false;
-			readJSON();
 			break;
 		case 1:
 			calendar.add(Calendar.DATE, 1);
-			hasDate = false;
-			readJSON();
-		default:
 			break;
 		}
+		hasDate = false;
+		readJSON();
+		scrollview.scrollTo(0, 0);
 	}
 
 	/**
@@ -556,12 +557,16 @@ public class VertretungenView extends View {
 		}
 		requestLayout();
 	}
-
+	
+	public void registerDateChanger(DateChanger dc){
+		datechanger = dc;
+	}
+	//TODO Wenn Fehler: try/catch anmachen
 	private final class GestureListener extends GestureDetector.SimpleOnGestureListener {
 		@Override
 		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
 			Log.d("fling", "A");
-			try {
+//			try {
 				int SWIPE_THRESHOLD = 100;
 				int SWIPE_VELOCITY_THRESHOLD = 100;
 				float diffY = e2.getY() - e1.getY();
@@ -569,23 +574,21 @@ public class VertretungenView extends View {
 				if (Math.abs(diffY) < 100) {
 					if (Math.abs(diffX) > SWIPE_THRESHOLD && Math.abs(velocityX) > SWIPE_VELOCITY_THRESHOLD) {
 						if (diffX > 0) {
-							calendar.add(Calendar.DATE, -1);
-							hasDate = false;
-							readJSON();
+							changeDate(-1);
+							datechanger.changeDate(-1);
 							return true;
 						} else {
-							calendar.add(Calendar.DATE, 1);
-							hasDate = false;
-							readJSON();
+							changeDate(1);
+							datechanger.changeDate(1);
 							return true;
 						}
 					} else {
 						return false;
 					}
 				}
-			} catch (Exception exception) {
-				exception.printStackTrace();
-			}
+//			} catch (Exception exception) {
+//				exception.printStackTrace();
+//			}
 			return super.onFling(e1, e2, velocityX, velocityY);
 		}
 	}
